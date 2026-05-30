@@ -8,6 +8,6 @@ RUN uv sync --no-install-project
 
 COPY . .
 
-RUN uv sync --locked
+RUN uv lock
 
 CMD ["uv", "run", "parser"]
