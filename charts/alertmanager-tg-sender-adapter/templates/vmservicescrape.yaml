@@ -1,0 +1,14 @@
+{{- if .Values.metrics.vmservicescrape.enabled }}
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: {{ include "alertmanager-tg-sender-adapter.fullname" . }}
+spec:
+  endpoints:
+  {{ with .Values.metrics.vmservicescrape.endpoints }}
+    {{ toYaml . | nindent 4 }}
+  {{ end }}
+  selector:
+    matchLabels:
+    {{- include "alertmanager-tg-sender-adapter.selectorLabels" . | nindent 6 }}
+{{- end -}}

@@ -2,9 +2,9 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "alertmanager_tg_sender_adapter.fullname" . }}
+  name: {{ include "alertmanager-tg-sender-adapter.fullname" . }}
   labels:
-    {{- include "alertmanager_tg_sender_adapter.labels" . | nindent 4 }}
+    {{- include "alertmanager-tg-sender-adapter.labels" . | nindent 4 }}
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -35,7 +35,7 @@ spec:
             {{- end }}
             backend:
               service:
-                name: {{ include "alertmanager_tg_sender_adapter.fullname" $ }}
+                name: {{ include "alertmanager-tg-sender-adapter.fullname" $ }}
                 port:
                   number: {{ $.Values.service.port }}
           {{- end }}

@@ -1,11 +1,11 @@
-# Default values for alertmanager_tg_sender_adapter.
+# Default values for alertmanager-tg-sender-adapter.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
   repository: ghcr.io
+  # Define image name
   name: durachyo/alertmanager-tg-sender-adapter
   # This sets the pull policy for images.
   pullPolicy: IfNotPresent
@@ -37,6 +37,22 @@ podAnnotations: {}
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 podLabels: {}
 
+# Mount Environment variables directly to pod
+env: [] 
+  # - name: XPLATFORM_ADDRESS
+  #   value: TEST1
+  # - name: XPLATFORM_USERNAME
+  #   value: TEST2
+  # - name: XPLATFORM_PASSWORD
+  #   value: TEST3
+
+# Use Environment variables from secret
+envFrom: []
+  # - secretRef:
+  #     name: my-secret
+  # - configMapRef:
+  #     name: my-configmap
+
 podSecurityContext: {}
   # fsGroup: 2000
 
@@ -50,10 +66,15 @@ securityContext: {}
 
 # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
+  enabled: true
   # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   type: ClusterIP
   # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
-  port: 8080
+  ports:
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
 
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
@@ -66,11 +87,24 @@ ingress:
     - host: chart-example.local
       paths:
         - path: /
-          pathType: ImplementationSpecific
+          pathType: Prefix
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+
+# Istio Ingress Gateway (see: https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/)
+istio:
+  enabled: false
+  # gateway:
+  #   selector: ingressgateway
+  #   servers:
+  #     - port:
+  #         number: 80
+  #         name: http
+  #         protocol: HTTP
+  #       hosts:
+  #         - ingress.k8s.local
 
 # -- Expose the service via gateway-api HTTPRoute
 # Requires Gateway API resources and suitable controller installed within the cluster
@@ -111,10 +145,6 @@ httpRoute:
   #       value: v2
 
 resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   # limits:
   #   cpu: 100m
   #   memory: 128Mi
@@ -127,9 +157,9 @@ livenessProbe:
   httpGet:
     path: /health
     port: http
-  initialDelaySeconds: 10 
-  failureThreshold: 10
-  periodSeconds: 5
+  initialDelaySeconds: 5
+  failureThreshold: 5
+  periodSeconds: 10
 readinessProbe:
   httpGet:
     path: /health
@@ -156,3 +186,14 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+metrics:
+  # Enable /metrics endpoints with FastAPI prometheus metrics
+  enabled: true
+  vmservicescrape:
+    enabled: true
+    endpoints:
+      - port: http
+        path: /metrics
+        scheme: HTTP
+        scrape_interval: 30s

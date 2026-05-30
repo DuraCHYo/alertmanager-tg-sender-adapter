@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "alertmanager_tg_sender_adapter.name" -}}
+{{- define "alertmanager-tg-sender-adapter.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "alertmanager_tg_sender_adapter.fullname" -}}
+{{- define "alertmanager-tg-sender-adapter.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "alertmanager_tg_sender_adapter.chart" -}}
+{{- define "alertmanager-tg-sender-adapter.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "alertmanager_tg_sender_adapter.labels" -}}
-helm.sh/chart: {{ include "alertmanager_tg_sender_adapter.chart" . }}
-{{ include "alertmanager_tg_sender_adapter.selectorLabels" . }}
+{{- define "alertmanager-tg-sender-adapter.labels" -}}
+helm.sh/chart: {{ include "alertmanager-tg-sender-adapter.chart" . }}
+{{ include "alertmanager-tg-sender-adapter.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "alertmanager_tg_sender_adapter.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "alertmanager_tg_sender_adapter.name" . }}
+{{- define "alertmanager-tg-sender-adapter.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "alertmanager-tg-sender-adapter.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "alertmanager_tg_sender_adapter.serviceAccountName" -}}
+{{- define "alertmanager-tg-sender-adapter.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "alertmanager_tg_sender_adapter.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "alertmanager-tg-sender-adapter.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}

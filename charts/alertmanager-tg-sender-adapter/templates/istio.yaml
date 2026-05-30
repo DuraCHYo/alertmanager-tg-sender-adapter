@@ -1,0 +1,59 @@
+{{- $gw := .Values.istio -}}
+{{- if $gw.enabled }}
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: {{ include "alertmanager-tg-sender-adapter.fullname" . }}
+spec:
+  selector:
+    istio: {{ $gw.gateway.selector }}
+
+  servers:
+{{- range $gw.gateway.servers }}
+    - port:
+{{ toYaml .port | nindent 8 }}
+{{- if .hosts }}
+      hosts:
+{{ toYaml .hosts | nindent 8 }}
+{{- end }}
+{{- end }}
+
+{{- end }}
+---
+{{- $root := . -}}
+{{- if .Values.istio.enabled }}
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: {{ include "alertmanager-tg-sender-adapter.fullname" . }}
+spec:
+
+  hosts:
+{{- range .Values.istio.gateway.servers }}
+{{- range .hosts }}
+    - {{ . }}
+{{- end }}
+{{- end }}
+
+  gateways:
+    - {{ include "alertmanager-tg-sender-adapter.fullname" . }}
+
+  http:
+    - match:
+        - uri:
+            exact: /health
+      route:
+        - destination:
+            host: {{ include "alertmanager-tg-sender-adapter.fullname" $root }}
+            port:
+              number: 8080
+
+    - match:
+        - uri:
+            exact: /api/v1/alertmanager-tg-sender-adapter
+      route:
+        - destination:
+            host: {{ include "alertmanager-tg-sender-adapter.fullname" $root }}
+            port:
+              number: 8080
+{{- end }}
