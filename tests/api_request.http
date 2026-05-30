@@ -15,7 +15,7 @@ content-type: application/json
     {
       "status": "resolved",
       "labels": {
-        "chatId": "-1002065272799",
+        "chatId": "-100",
         "alertgroup": "kubernetes-apps",
         "alertname": "KubeDaemonSetMisScheduled123",
         "container": "kube-state-metrics",
@@ -40,7 +40,7 @@ content-type: application/json
     {
       "status": "firing",
       "labels": {
-        "chatId": "-1002065272799",
+        "chatId": "-100",
         "alertgroup": "kubernetes-apps",
         "alertname": "KubeDaemonSetMisScheduled456",
         "container": "kube-state-metrics",
