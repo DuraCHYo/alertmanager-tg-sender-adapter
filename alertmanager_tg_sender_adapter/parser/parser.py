@@ -1,6 +1,3 @@
-import logging
-import os
-
 from requests import exceptions
 
 
@@ -10,6 +7,7 @@ def parse_alertmanager_payload(payload: dict) -> list:
         parsed_alerts = []
         for alert in alerts:
             parsed_alert = {
+                "chatId": alert.get("labels", {}).get("chatId", None),
                 "alertname": alert.get("labels", {}).get("alertname", ""),
                 "status": alert.get("status"),
                 "alertgroup": alert.get("labels", {}).get("alertgroup", ""),
@@ -21,15 +19,14 @@ def parse_alertmanager_payload(payload: dict) -> list:
                 "instance": alert.get("labels", {}).get("instance", ""),
                 "description": alert.get("annotations", {}).get("description", ""),
                 "grafana_dashboard": alert.get("annotations", {}).get(
-                    "grafana_dashboard", ""
+                    "grafana_dashboard", "Нет"
                 ),
                 "startsAt": alert.get("startsAt"),
                 "endsAt": alert.get("endsAt"),
             }
             parsed_alerts.append(parsed_alert)
         return parsed_alerts
-    except Exception as e:
-        logging.error(f"Ошибка парсинга JSON-пейлоада от Alertmanager: {e}")
+    except Exception:
         raise exceptions.InvalidJSONError()
 
 
@@ -44,29 +41,31 @@ def combine_all_fields_to_body(alerts_list) -> list:
         else:
             state = "🚨 Проблема"
             ends_at_line = ""
-        if alert.get("container") != "":
+        if alert.get("container") is not None:
             add_container = f"Контейнер: {alert.get('container')}"
-        if alert.get("instance") != "":
+        if alert.get("instance") is not None:
             add_instance = f"Нода: {alert.get('instance')}"
+        if alert.get("chatId") is None:
+            raise ValueError("chatId label is not set")
         alert_body_with_all = {
-            "chatId": int(os.getenv("INFRA_CHAT_ID", "0000")),
+            "chatId": int(alert.get("chatId")),
             "text": f"Статус: {state}\n"
             f"Группа: {alert.get('alertgroup')}\n"
             f"Название: {alert.get('alertname')}\n"
-            "---------"
+            "---------\n"
             f"Влияние: {alert.get('severity')}\n"
             f"Неймспейс: {alert.get('namespace')}\n"
-            f"{add_instance}"
-            f"{add_container}"
-            "---------"
+            f"{add_instance}\n"
+            f"{add_container}\n"
+            "---------\n"
             f"Заголовок: {alert.get('summary')}\n"
             f"Описание: {alert.get('description')}\n"
-            "---------"
+            "---------\n"
             f"Время начала проблемы: {alert.get('startsAt')}\n"
             f"{ends_at_line}"
-            "---------"
+            "---------\n"
             f"Ссылка на Grafana: {alert.get('grafana_dashboard')}",
-            "enableParseMode": "true",
+            "enableParseMode": "false",
             "Название": alert.get("alertname"),
             "Статус": state,
             "Влияние": alert.get("severity"),

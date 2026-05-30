@@ -28,18 +28,18 @@ logging.basicConfig(
 
 
 @app.post("/api/v1/alertmanager-tg-sender-adapter")
-def sender(data=Body()):
-    parsed_alerts = parse_alertmanager_payload(payload=data)
-    messages = combine_all_fields_to_body(parsed_alerts)
+def sender(payload=Body()):
+    parsed_alerts = parse_alertmanager_payload(payload)
+    alerts_list = combine_all_fields_to_body(parsed_alerts)
     try:
-        for message_body in messages:
+        for message_body in alerts_list:
             logging.info(
                 f"Отправляю сообщение для алерта: {message_body.get('Название')}"
             )
             s = r.post(
-                os.getenv("XPLATFORM_ADDRESS", "https://mock"),
+                os.getenv("XPLATFORM_ADDRESS", "http://mock"),
                 json=message_body,
-                timeout=5,
+                timeout=10,
             )
             logging.info(f"Ответ: {s.text}")
             if s.status_code != 200:
