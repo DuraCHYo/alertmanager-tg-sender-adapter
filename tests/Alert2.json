@@ -1,0 +1,12 @@
+{
+  "status": "firing",
+  "alertname": "KubeDaemonSetMisScheduled",
+  "alertgroup": "kubernetes-apps",
+  "severity": "warning",
+  "namespace": "kube-system",
+  "summary": "DaemonSet pods are misscheduled.",
+  "description": "1 Pods of DaemonSet kube-system/svclb-traefik-cfbcf9b2 are running where they are not supposed to run on cluster .",
+  "grafana_dashboard": "",
+  "startsAt": "2026-05-27T23:07:00Z",
+  "endsAt": "0001-01-01T00:00:00Z"
+}

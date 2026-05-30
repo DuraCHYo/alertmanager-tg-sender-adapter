@@ -1,0 +1,27 @@
+[project]
+name = "alertmanager-tg-sender-adapter"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Danila Epishev", email = "DEpishev@alfabank.ru" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi>=0.136.3",
+    "python-dotenv>=1.2.2",
+    "requests>=2.34.2",
+    "uvicorn>=0.48.0",
+]
+[project.scripts]
+parser = "alertmanager_tg_sender_adapter.main:main"
+
+[build-system]
+requires = ["setuptools>=82.0.1"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["alertmanager_tg_sender_adapter"]
+
+[dependency-groups]
+dev = []

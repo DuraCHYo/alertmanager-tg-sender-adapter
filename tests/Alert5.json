@@ -1,0 +1,12 @@
+{
+  "status": "firing",
+  "alertname": "CPUThrottlingHigh",
+  "alertgroup": "kubernetes-resources",
+  "severity": "info",
+  "namespace": "mtproxy-healthcheck",
+  "summary": "Processes experience elevated CPU throttling.",
+  "description": "98.46% throttling of CPU in namespace mtproxy-healthcheck for container mtproxy-healthcheck in pod mtproxy-healthcheck-8588d84b85-4qcwj on cluster .",
+  "grafana_dashboard": "",
+  "startsAt": "2026-05-28T01:17:00Z",
+  "endsAt": "0001-01-01T00:00:00Z"
+}

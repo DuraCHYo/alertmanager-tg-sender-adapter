@@ -1,0 +1,12 @@
+{
+  "status": "firing",
+  "alertname": "InfoInhibitor",
+  "alertgroup": "general.rules",
+  "severity": "none",
+  "namespace": "mtproxy-healthcheck",
+  "summary": "Info-level alert inhibition.",
+  "description": "This is an alert that is used to inhibit info alerts.\nBy themselves, the info-level alerts are sometimes very noisy, but they are relevant when combined with\nother alerts.\nThis alert fires whenever there\"s a severity=\"info\" alert, and stops firing when another alert with a\nseverity of \"warning\" or \"critical\" starts firing on the same namespace.\nThis alert should be routed to a null receiver and configured to inhibit alerts with severity=\"info\".\n",
+  "grafana_dashboard": "",
+  "startsAt": "2026-05-28T01:02:20Z",
+  "endsAt": "0001-01-01T00:00:00Z"
+}

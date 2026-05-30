@@ -1,0 +1,12 @@
+{
+  "status": "resolved",
+  "alertname": "AlertmanagerClusterFailedToSendAlerts",
+  "alertgroup": "alertmanager.rules",
+  "severity": "critical",
+  "namespace": "monitoring",
+  "summary": "All Alertmanager instances in a cluster failed to send notifications to a critical integration.",
+  "description": "The minimum notification failure rate to webhook sent from any instance in the  cluster is 50%.",
+  "grafana_dashboard": "",
+  "startsAt": "2026-05-29T19:48:40Z",
+  "endsAt": "2026-05-29T20:23:40Z"
+}
