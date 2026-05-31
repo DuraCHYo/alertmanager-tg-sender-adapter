@@ -1,6 +1,6 @@
 [project]
 name = "alertmanager-tg-sender-adapter"
-version = "1.0.3"
+version = "1.0.4"
 description = "Add your description here"
 readme = "README.md"
 authors = [
@@ -22,8 +22,8 @@ alertmanager_tg_sender_adapter = "alertmanager_tg_sender_adapter.main:main"
 requires = ["setuptools>=82.0.1"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-packages = ["alertmanager_tg_sender_adapter"]
+[tool.setuptools.packages.find]
+where = ["."]
 
 [dependency-groups]
 dev = []

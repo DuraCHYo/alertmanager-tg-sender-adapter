@@ -6,13 +6,11 @@ RUN addgroup -S appgroup && \
 WORKDIR /app
 
 COPY pyproject.toml uv.lock README.md ./
+COPY alertmanager_tg_sender_adapter ./alertmanager_tg_sender_adapter
 
 RUN chown -R uvnonroot:appgroup /app
-
 USER uvnonroot:appgroup
 
-RUN uv sync --frozen --no-install-project
-
-COPY --chown=uvnonroot:appgroup . .
+RUN uv sync --frozen
 
 ENTRYPOINT ["/app/.venv/bin/alertmanager_tg_sender_adapter"]
