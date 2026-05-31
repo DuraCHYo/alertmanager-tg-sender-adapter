@@ -78,4 +78,6 @@ def main():
     ).instrument(app)
     instrumentator.expose(app)
     logging.info("Alertmanager TG Sender Adapter запущен")
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    uvicorn.run(
+        app, host="0.0.0.0", port=8080, log_level=os.getenv("LOG_LEVEL", "Info")
+    )

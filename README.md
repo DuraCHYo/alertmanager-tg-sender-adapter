@@ -43,7 +43,7 @@ uv run alertmanager_tg_sender_adapter
 ## Установка в Docker
 Для приложения доступен запуск в виде Docker контейнера.
 ```bash
-docker run --rm --name alertmanager-tg-sender-adapter -p 8080:8080 -e XPLATFORM_ADDRESS=https://address-to-api/sendMessage -e XPLATFORM_USERNAME=API_USERNAME -e XPLATFORM_PASSWORD=API_PASSWORD ghcr.io/durachyo/alertmanager-tg-sender-adapter:v1.0.4
+docker run --rm --name alertmanager-tg-sender-adapter -p 8080:8080 -e XPLATFORM_ADDRESS=https://address-to-api/sendMessage -e XPLATFORM_USERNAME=API_USERNAME -e XPLATFORM_PASSWORD=API_PASSWORD ghcr.io/durachyo/alertmanager-tg-sender-adapter:v1.0.5
 ```
 
 ## Безопасность
@@ -64,4 +64,3 @@ docker run --rm --name alertmanager-tg-sender-adapter -p 8080:8080 -e XPLATFORM_
 ## Что ещё можно сделать
 1. Сделать переменную DEBUG=True, чтобы переводить все сообщения в Debug режим для отладки Body и так далее.
 2. Дедубликация алертов, чтобы поднимать в многонодную конфигурацию >1 реплики.
-3. 
