@@ -15,4 +15,4 @@ RUN uv sync --frozen --no-install-project
 
 COPY --chown=uvnonroot:appgroup . .
 
-ENTRYPOINT ["uv", "run", "alertmanager_tg_sender_adapter"]
+ENTRYPOINT ["/app/.venv/bin/alertmanager_tg_sender_adapter"]
