@@ -5,10 +5,9 @@
 
 ## Описание
 
-Что это: Приложение-адаптер позволяет отправлять алерты из Алертменеджера в X-Platform Telegram Sender Adapter для последующей отправке в каналы в Telegram.
-Для чего: Предназначено чтобы разгрузить Алертменеджер Графаны, выполнение 200+ правил заметно её замедляет.
-
-Флоу: Alertmanager -> AlertManager X-Platform Telegram Sender Adapter -> X-Platform - Telegram
+* Что это: Приложение-адаптер позволяет отправлять алерты из Алертменеджера в X-Platform Telegram Sender Adapter для последующей отправке в каналы в Telegram.
+* Для чего: Предназначено чтобы разгрузить Алертменеджер Графаны, выполнение 200+ правил заметно её замедляет.
+* Флоу: Alertmanager -> AlertManager X-Platform Telegram Sender Adapter -> X-Platform - Telegram
 
 ## Быстрый старт
 1. Установить [uv](https://docs.astral.sh/uv/getting-started/installation/#installing-uv)
@@ -37,9 +36,9 @@ uv run alertmanager_tg_sender_adapter
 #### По умолчанию приложение слушает на **0.0.0.0:8080**
 
 ## Установка в Kubernetes
-Приложение выступает HTTP-хендлером, поэтому может использоваться в среде K8s.
-Для этого в этом репозитории есть исходный код Helm чарта и архив с ним же в директории [charts](https://github.com/DuraCHYo/alertmanager-tg-sender-adapter/tree/master/charts/alertmanager-tg-sender-adapter)
-Установка протестирована и полностью безопасна.
+* Приложение выступает HTTP-хендлером, поэтому может использоваться в среде K8s.
+* Для этого в этом репозитории есть исходный код Helm чарта и архив с ним же в директории [charts](https://github.com/DuraCHYo/alertmanager-tg-sender-adapter/tree/master/charts/alertmanager-tg-sender-adapter)
+* Установка протестирована и полностью безопасна.
 
 ## Установка в Docker
 Для приложения доступен запуск в виде Docker контейнера.
