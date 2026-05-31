@@ -5,7 +5,7 @@
 
 ## Описание
 
-* Что это: Приложение-адаптер позволяет отправлять алерты из Алертменеджера в X-Platform Telegram Sender Adapter для последующей отправке в каналы в Telegram.
+* Что это: Приложение-адаптер позволяет отправлять алерты из Алертменеджера в X-Platform Telegram Sender Adapter для последующей отправки в каналы в Telegram.
 * Для чего: Предназначено чтобы разгрузить Алертменеджер Графаны, выполнение 200+ правил заметно её замедляет.
 * Флоу: Alertmanager -> AlertManager X-Platform Telegram Sender Adapter -> X-Platform - Telegram
 
