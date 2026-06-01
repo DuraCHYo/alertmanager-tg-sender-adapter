@@ -54,7 +54,7 @@ spec:
             - name: ENABLE_METRICS
               value: {{ .Values.metrics.enabled | toString | title | quote | default "True" }}
             - name: LOG_LEVEL
-              value: {{ .Values.logLevel | toString | title | quote | default "Info" }} 
+              value: {{ .Values.logLevel | toString | quote | default "INFO" }} 
           {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
           {{- end -}}

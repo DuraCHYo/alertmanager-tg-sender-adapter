@@ -1,6 +1,6 @@
 [project]
 name = "alertmanager-tg-sender-adapter"
-version = "1.0.5"
+version = "1.0.6"
 description = "Add your description here"
 readme = "README.md"
 authors = [
@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.14"
 dependencies = [
     "fastapi>=0.136.3",
+    "playwright>=1.60.0",
     "prometheus-client>=0.25.0",
     "prometheus-fastapi-instrumentator>=8.0.0",
     "python-dotenv>=1.2.2",

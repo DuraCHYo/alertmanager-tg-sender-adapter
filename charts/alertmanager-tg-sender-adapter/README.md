@@ -1,6 +1,6 @@
 # alertmanager-tg-sender-adapter
 
-![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v1.0.2](https://img.shields.io/badge/AppVersion-v1.0.2-informational?style=flat-square)
+![Version: 1.0.6](https://img.shields.io/badge/Version-1.0.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v1.0.6](https://img.shields.io/badge/AppVersion-v1.0.6-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -37,6 +37,7 @@ A Helm chart for Kubernetes
 | livenessProbe.httpGet.port | string | `"http"` |  |
 | livenessProbe.initialDelaySeconds | int | `5` |  |
 | livenessProbe.periodSeconds | int | `10` |  |
+| logLevel | string | `"Info"` |  |
 | metrics.enabled | bool | `true` |  |
 | metrics.vmservicescrape.enabled | bool | `true` |  |
 | metrics.vmservicescrape.endpoints[0].path | string | `"/metrics"` |  |

@@ -1,5 +1,5 @@
-CURRENT = 1.0.4
-TARGET = 1.0.5
+CURRENT = 1.0.5
+TARGET = 1.0.6
 PROJECTNAME = $(shell basename "$(PWD)")
 
 release:
@@ -8,4 +8,5 @@ release:
 	uv version $(TARGET)
 	sed -i '' 's/$(CURRENT)/$(TARGET)/g' charts/$(PROJECTNAME)/Chart.yaml
 	rm -f charts/$(PROJECTNAME)/$(PROJECTNAME)-$(CURRENT).tgz
+	helm-docs .
 	helm package charts/$(PROJECTNAME) -d charts/$(PROJECTNAME)/

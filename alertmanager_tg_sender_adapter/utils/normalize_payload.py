@@ -18,7 +18,7 @@ def parse_alertmanager_payload(payload: dict) -> list:
                 "container": alert.get("labels", {}).get("container", ""),
                 "instance": alert.get("labels", {}).get("instance", ""),
                 "description": alert.get("annotations", {}).get("description", ""),
-                "grafana_dashboard": alert.get("annotations", {}).get(
+                "grafana_dashboard": alert.get("labels", {}).get(
                     "grafana_dashboard", "Нет"
                 ),
                 "startsAt": alert.get("startsAt"),
@@ -64,11 +64,13 @@ def combine_all_fields_to_body(alerts_list) -> list:
             f"Время начала проблемы: {alert.get('startsAt')}\n"
             f"{ends_at_line}"
             "---------\n"
-            f"Ссылка на Grafana: {alert.get('grafana_dashboard')}",
+            f"Ссылка на Grafana: {alert.get('grafana_dashboard')}\n"
+            "---------",
             "enableParseMode": "false",
-            "Название": alert.get("alertname"),
-            "Статус": state,
-            "Влияние": alert.get("severity"),
+            "tech_alertname": alert.get("alertname"),
+            "tech_alertstate": state,
+            "tech_severity": alert.get("severity"),
+            "tech_grafana_dashboard": alert.get("grafana_dashboard"),
         }
 
         body_to_send.append(alert_body_with_all)
