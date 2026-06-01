@@ -15,7 +15,7 @@ content-type: application/json
     {
       "status": "resolved",
       "labels": {
-        "chatId": "-1002065272799",
+        "chatId": "-100",
         "alertgroup": "kubernetes-apps",
         "alertname": "KubeDaemonSetMisScheduled123",
         "container": "kube-state-metrics",
@@ -40,8 +40,8 @@ content-type: application/json
     {
       "status": "firing",
       "labels": {
-        "chatId": "-1002065272799",
-        "grafana_dashboard": "https://sfaflmon/grafana/d/bf3evaaa5ph4wf/main-dashboard?orgId=1&from=now-30m&to=now&timezone=Europe%2FMoscow&var-SFAFL=$__all&var-Filters=&refresh=1m&kiosk=true",
+        "chatId": "-100",
+        "grafana_dashboard": "https://sfaflmon/...../&kiosk=true",
         "send_grafana_full_page": "False",
         "alertgroup": "kubernetes-apps",
         "alertname": "KubeDaemonSetMisScheduled456",
