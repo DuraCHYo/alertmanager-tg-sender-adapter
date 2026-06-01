@@ -1,7 +1,7 @@
 FROM ghcr.io/astral-sh/uv:0.11.17-python3.13-trixie
 
-RUN addgroup -S appgroup && \
-    adduser -S -G appgroup -h /app uvnonroot
+RUN groupadd --system appgroup && \
+    useradd --system --gid appgroup --home-dir /app --create-home uvnonroot
 
 WORKDIR /app
 
