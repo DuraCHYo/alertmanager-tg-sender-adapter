@@ -23,6 +23,9 @@ def parse_alertmanager_payload(payload: dict) -> list:
                 ),
                 "startsAt": alert.get("startsAt"),
                 "endsAt": alert.get("endsAt"),
+                "send_grafana_full_page": alert.get("labels", {}).get(
+                    "send_grafana_full_page", "False"
+                ),
             }
             parsed_alerts.append(parsed_alert)
         return parsed_alerts
@@ -35,6 +38,11 @@ def combine_all_fields_to_body(alerts_list) -> list:
     add_container = ""
     add_instance = ""
     for alert in alerts_list:
+        send_full_page = alert.get("send_grafana_full_page", "False")
+        if isinstance(send_full_page, str):
+            tech_send_full_page = send_full_page.lower() == "true"
+        else:
+            tech_send_full_page = bool(send_full_page)
         if alert.get("status") == "resolved":
             state = "✅ Восстановление"
             ends_at_line = f"Время конца проблемы: {alert.get('endsAt')}\n"
@@ -71,6 +79,7 @@ def combine_all_fields_to_body(alerts_list) -> list:
             "tech_alertstate": state,
             "tech_severity": alert.get("severity"),
             "tech_grafana_dashboard": alert.get("grafana_dashboard"),
+            "tech_send_grafana_full_page": tech_send_full_page,
         }
 
         body_to_send.append(alert_body_with_all)
