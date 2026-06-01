@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:alpine3.23
+FROM ghcr.io/astral-sh/uv:python3.13-alpine3.23
 
 RUN addgroup -S appgroup && \
     adduser -S -G appgroup -h /app uvnonroot

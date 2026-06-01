@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     { name = "Danila Epishev", email = "DEpishev@alfabank.ru" }
 ]
-requires-python = ">=3.14"
+requires-python = ">=3.13"
 dependencies = [
     "fastapi>=0.136.3",
     "playwright>=1.60.0",
