@@ -31,7 +31,7 @@ export XPLATFORM_PASSWORD=API_PASSWORD
 ```
 6. Запустить приложение
 ```bash
-uv run alertmanager_tg_sender_adapter
+uv run alertmanager-tg-sender-adapter
 ```
 #### По умолчанию приложение слушает на **0.0.0.0:8080**
 
@@ -43,7 +43,7 @@ uv run alertmanager_tg_sender_adapter
 ## Установка в Docker
 Для приложения доступен запуск в виде Docker контейнера.
 ```bash
-docker run --rm --name alertmanager-tg-sender-adapter -p 8080:8080 -e XPLATFORM_ADDRESS=https://address-to-api/sendMessage -e XPLATFORM_USERNAME=API_USERNAME -e XPLATFORM_PASSWORD=API_PASSWORD ghcr.io/durachyo/alertmanager-tg-sender-adapter:v1.0.7
+docker run --rm --name alertmanager-tg-sender-adapter -p 8080:8080 -e XPLATFORM_ADDRESS=https://address-to-api/sendMessage -e XPLATFORM_USERNAME=API_USERNAME -e XPLATFORM_PASSWORD=API_PASSWORD ghcr.io/durachyo/alertmanager-tg-sender-adapter:v1.1.0
 ```
 
 ## Безопасность

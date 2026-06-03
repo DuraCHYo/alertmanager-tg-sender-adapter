@@ -1,6 +1,6 @@
 [project]
 name = "alertmanager-tg-sender-adapter"
-version = "1.0.7"
+version = "1.1.0"
 description = "Add your description here"
 readme = "README.md"
 authors = [
@@ -17,7 +17,7 @@ dependencies = [
     "uvicorn>=0.48.0",
 ]
 [project.scripts]
-alertmanager_tg_sender_adapter = "alertmanager_tg_sender_adapter.main:main"
+alertmanager-tg-sender-adapter = "alertmanager_tg_sender_adapter.main:main"
 
 [build-system]
 requires = ["setuptools>=82.0.1"]

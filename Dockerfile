@@ -15,4 +15,4 @@ USER uvnonroot:appgroup
 RUN uv sync --frozen && \
     .venv/bin/playwright install chromium
 
-ENTRYPOINT ["/app/.venv/bin/alertmanager_tg_sender_adapter"]
+ENTRYPOINT ["/app/.venv/bin/alertmanager-tg-sender-adapter"]
