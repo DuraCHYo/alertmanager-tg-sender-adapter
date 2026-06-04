@@ -31,7 +31,7 @@ def process_image(grafana_dashboard_kiosk_url, message_body):
     browser = None
 
     with sync_playwright() as p:
-        chromium_args = ["--disable-dev-shm-usage"]
+        chromium_args = ["--disable-dev-shm-usage", "--ignore-certificate-errors"]
 
         try:
             render_timeout = 2500 if is_full_page else 500

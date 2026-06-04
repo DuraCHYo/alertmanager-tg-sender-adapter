@@ -1,5 +1,5 @@
-CURRENT = 1.1.0
-TARGET = 1.1.1
+CURRENT = 1.1.1
+TARGET = 1.1.2
 PROJECTNAME = $(shell basename "$(PWD)")
 
 release:
