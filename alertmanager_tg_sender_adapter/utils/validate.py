@@ -31,11 +31,3 @@ def is_dashboard_screenshoter_url_available(grafana_dashboard_kiosk_url):
             logger.error(f"Ошибка при запросе к {grafana_dashboard_kiosk_url}: {e}")
 
     return (is_valid_url, kiosk_mode_notify, connection_established_ok)
-
-
-if __name__ == "__main__":
-    print(
-        is_dashboard_screenshoter_url_available(
-            "https://sfaflmon/grafana/d/bf3evaaa5ph4wf/main-dashboard?orgId=1&from=now-30m&to=now&timezone=Europe%2FMoscow&var-SFAFL=$__all&var-Filters=&refresh=1m&kiosk=true"
-        )
-    )
