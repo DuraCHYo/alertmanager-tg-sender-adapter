@@ -9,6 +9,19 @@
 * Для чего: Предназначено чтобы разгрузить Алертменеджер Графаны, выполнение 200+ правил заметно её замедляет.
 * Флоу: Alertmanager -> AlertManager X-Platform Telegram Sender Adapter -> X-Platform -> Telegram
 
+## Архитектура
+
+Основные компоненты:
+
+- `alertmanager_tg_sender_adapter/main.py` — FastAPI приложение, HTTP-эндпоинты и запуск сервера.
+- `alertmanager_tg_sender_adapter/processors/text.py` — отправка текстового сообщения в X-Platform.
+- `alertmanager_tg_sender_adapter/processors/image.py` — генерация скриншота Grafana через Playwright и отправка медиа-группы.
+- `alertmanager_tg_sender_adapter/utils/auth.py` — авторизация и обработка HTTP-сессии.
+- `alertmanager_tg_sender_adapter/utils/normalize_payload.py` — разбор payload от Alertmanager и формирование тела сообщения.
+- `alertmanager_tg_sender_adapter/utils/validate.py` — проверка URL дашборда Grafana.
+- `alertmanager_tg_sender_adapter/utils/logger_config.py` — конфигурация логирования.
+- `alertmanager_tg_sender_adapter/utils/metrics.py` — Prometheus метрики.
+
 ## Быстрый старт
 1. Установить [uv](https://docs.astral.sh/uv/getting-started/installation/#installing-uv)
 2. Склонировать этот репозиторий
@@ -33,34 +46,127 @@ export XPLATFORM_PASSWORD=API_PASSWORD
 ```bash
 uv run alertmanager-tg-sender-adapter
 ```
-#### По умолчанию приложение слушает на **0.0.0.0:8080**
+#### По умолчанию приложение слушает на 0.0.0.0:8080
+
+## Требования
+
+- Python >= 3.13
+- fastapi
+- uvicorn
+- requests
+- python-dotenv
+- prometheus-client
+- prometheus-fastapi-instrumentator
+- playwright
+
+Версии указаны в `pyproject.toml`.
+
+## Переменные окружения
+
+Обязательные:
+
+- `XPLATFORM_ADDRESS` — базовый URL X-Platform API для отправки сообщений.
+- `XPLATFORM_USERNAME` — логин для доступа к X-Platform.
+- `XPLATFORM_PASSWORD` — пароль для доступа к X-Platform.
+
+Дополнительные:
+
+- `GRAFANA_SA_TOKEN` — сервисный токен для доступа к Grafana при генерации скриншотов.
+- `LOG_LEVEL` — уровень логирования (`INFO` по умолчанию). Поддерживается `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`.
+- `ENABLE_METRICS` — если установлен (`True` по умолчанию), Prometheus метрики активируются.
+
+## API
+
+Основной маршрут:
+
+- `POST /api/v1/alertmanager-tg-sender-adapter/send`
+
+Тело запроса должно быть стандартным payload от Alertmanager, содержащим список `alerts`.
+
+Проверка здоровья:
+
+- `GET /health` — возвращает строку `I'm healthy!`.
+
+## Как обрабатываются алерты
+
+1. Парсится входной payload через `parse_alertmanager_payload`.
+2. Для каждого алерта формируется тело сообщения функцией `combine_all_fields_to_body`.
+3. Если отсутствует `grafana_dashboard` или он равен `Нет`, алерт отправляется как текстовое сообщение.
+4. Если URL валидный и доступен, `process_image` делает скриншот Grafana и отправляет медиа-группу на `sendMediaGroup`.
+5. Если URL недоступен или невалидный, используется `process_text`.
+
+## Формирование сообщений
+
+Сообщение включает:
+
+- `chatId` из лейбла `chatId`.
+- `alertname`, `alertgroup`, `severity`, `namespace`, `summary`, `description`.
+- `startsAt` и `endsAt`.
+- ссылку на Grafana.
+
+Для отправки изображения используется опция `tech_send_grafana_full_page`, которая определяется из лейбла `send_grafana_full_page`.
+
+## Проверка Grafana URL
+
+В `alertmanager_tg_sender_adapter/utils/validate.py` проверяется:
+
+- протокол `http` или `https`;
+- наличие хоста и пути;
+- доступность URL по HTTP GET;
+- наличие параметра `kiosk` в строке запроса.
+
+Если `kiosk` не указан, логируется предупреждение, но отправка со скриншотом все равно выполняется.
+
+## Метрики
+
+Приложение собирает метрики Prometheus через `prometheus_fastapi_instrumentator`:
+
+- счетчики успешных и неуспешных отправок;
+- метрики генерации скриншотов;
+- время выполнения upstream-запросов.
+
+Метрики доступны на `/metrics` при включении через `ENABLE_METRICS`.
 
 ## Установка в Kubernetes
+
 * Приложение выступает HTTP-хендлером, поэтому может использоваться в среде K8s.
 * Для этого в этом репозитории есть исходный код Helm чарта и архив с ним же в директории [charts](https://github.com/DuraCHYo/alertmanager-tg-sender-adapter/tree/master/charts/alertmanager-tg-sender-adapter)
 * Установка протестирована и полностью безопасна.
 
 ## Установка в Docker
+
 Для приложения доступен запуск в виде Docker контейнера.
 ```bash
 docker run --rm --name alertmanager-tg-sender-adapter -p 8080:8080 -e XPLATFORM_ADDRESS=https://address-to-api/sendMessage -e XPLATFORM_USERNAME=API_USERNAME -e XPLATFORM_PASSWORD=API_PASSWORD ghcr.io/durachyo/alertmanager-tg-sender-adapter:v1.1.1
 ```
 
 ## Безопасность
-1. Все секреты сохранены в памяти приложения, их компроментация невозможна.
+
+1. Все секреты сохранены в памяти приложения, их компрометация невозможна.
 2. Образ приложения собран с учётом последних параметров безопасности базовых образов.
-3. Принимая во внимание требование об отказе от использования контейнеров, запускаемых от root - образ приложения имеет **собственную группу и пользователя** под которым запускается приложение: *uvnonroot*
+3. Принимая во внимание требование об отказе от использования контейнеров, запускаемых от root - образ приложения имеет собственную группу и пользователя под которым запускается приложение: `uvnonroot`
 
 ## Тестирование и формат запросов
-1. Тестовые запросы и их формат доступны в директории [tests](https://github.com/DuraCHYo/alertmanager-tg-sender-adapter/tree/master/tests)
+
+1. Тестовые запросы и их формат доступны в директории `tests/`.
+2. Примеры http-запросов находятся в файле `tests/send.http`.
 
 ## Что прикольного
-1. Всё на FastAPI. Лучший в мире фреймворк
-2. Ассинхрон на uvicorn
-3. Централизованное логирование
-4. Метрики Prometheus. Инструментация в виде декораторов. Базовые метрики из стандартного пакета и собственноручные. Бизнесовые.
-5. Принципы ООП соблюдены :)
+
+1. Всё на FastAPI.
+2. Асинхрон на uvicorn.
+3. Централизованное логирование.
+4. Метрики Prometheus.
+5. Принципы ООП соблюдены.
 
 ## Что ещё можно сделать
+
 1. Сделать переменную DEBUG=True, чтобы переводить все сообщения в Debug режим для отладки Body и так далее.
 2. Дедубликация алертов, чтобы поднимать в многонодную конфигурацию >1 реплики.
+
+## Важные заметки
+
+- `chatId` обязательный лейбл для отправки сообщения.
+- `GRAFANA_SA_TOKEN` требуется только при генерации скриншотов Grafana.
+- `XPLATFORM_ADDRESS` используется как базовый URL, к которому дополняются пути `sendMessage` и `sendMediaGroup`.
+- Логирование настраивается через `LOG_LEVEL`.
