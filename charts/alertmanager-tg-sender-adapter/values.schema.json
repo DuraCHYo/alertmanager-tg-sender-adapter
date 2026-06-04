@@ -453,10 +453,11 @@
       "type": "string"
     },
     "nodeSelector": {
-      "additionalProperties": false,
-      "required": [],
+      "type": "object",
       "title": "nodeSelector",
-      "type": "object"
+      "additionalProperties": {
+        "type": "string"
+      }
     },
     "podAnnotations": {
       "additionalProperties": false,
