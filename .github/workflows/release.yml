@@ -47,6 +47,7 @@ jobs:
           mode: single
           chart_path: ./charts/alertmanager-tg-sender-adapter
           gh_pages_url: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+          helm_package_args: --version ${{ steps.get_version.outputs.VERSION }} --app-version v${{ steps.get_version.outputs.VERSION }}
           registry_password: ${{ secrets.GITHUB_TOKEN }}
           enable_oci_push: false
           skip_existing: true
