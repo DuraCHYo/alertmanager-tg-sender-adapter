@@ -37,8 +37,9 @@ cd alertmanager-tg-sender-adapter
 uv sync
 ```
 5. Для работы приложения есть 3 обязательных переменных среды. Установите согласно паттерну:
+`XPLATFORM_ADDRESS` используется как базовый URL, к которому дополняются пути `sendMessage` и `sendMediaGroup`.
 ```bash
-export XPLATFORM_ADDRESS=https://address-to-api/sendMessage
+export XPLATFORM_ADDRESS=https://address-to-api/tg-sender-api/api/v1/tg/
 export XPLATFORM_USERNAME=API_USERNAME
 export XPLATFORM_PASSWORD=API_PASSWORD
 ```
@@ -158,11 +159,6 @@ docker run --rm --name alertmanager-tg-sender-adapter -p 8080:8080 -e XPLATFORM_
 3. Централизованное логирование.
 4. Метрики Prometheus.
 5. Принципы ООП соблюдены.
-
-## Что ещё можно сделать
-
-1. Сделать переменную DEBUG=True, чтобы переводить все сообщения в Debug режим для отладки Body и так далее.
-2. Дедубликация алертов, чтобы поднимать в многонодную конфигурацию >1 реплики.
 
 ## Важные заметки
 
