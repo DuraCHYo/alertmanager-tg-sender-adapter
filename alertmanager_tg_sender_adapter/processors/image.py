@@ -10,7 +10,14 @@ from playwright.sync_api import ViewportSize, sync_playwright
 
 from alertmanager_tg_sender_adapter.utils.auth import Authorization
 from alertmanager_tg_sender_adapter.utils.metrics import (
+    alert_image_sent_failed_total,
     alert_sent_failed_total,
+    alert_sent_successful_total,
+    disposal_errors_total,
+    incoming_alerts_total,
+    screenshot_duration_seconds,
+    screenshot_generation_errors_total,
+    upstream_request_duration_seconds,
 )
 
 load_dotenv()
@@ -27,6 +34,11 @@ def process_image(grafana_dashboard_kiosk_url, message_body):
         width=window_size.get("width", 1920), height=window_size.get("height", 1080)
     )
     screenshot_path = os.path.join(os.getcwd(), f"{screenshot_event_id}.png")
+
+    incoming_alerts_total.labels(
+        has_dashboard=str(bool(grafana_dashboard_kiosk_url)),
+        full_page=str(is_full_page),
+    ).inc()
 
     browser = None
 
@@ -51,6 +63,13 @@ def process_image(grafana_dashboard_kiosk_url, message_body):
                 )
                 alert_sent_failed_total.labels(
                     category="image_generation_failed",
+                    http_code="none",
+                    error_code="LAUNCH_ERROR",
+                    description="Failed to launch chromium browser",
+                    detail=str(e)[:200],
+                ).inc()
+                screenshot_generation_errors_total.labels(
+                    stage="launch", error_type=type(e).__name__
                 ).inc()
                 raise
 
@@ -61,6 +80,13 @@ def process_image(grafana_dashboard_kiosk_url, message_body):
                 logger.error(f"Ошибка создания вкладки: {e}")
                 alert_sent_failed_total.labels(
                     category="image_generation_failed",
+                    http_code="none",
+                    error_code="NEW_PAGE_ERROR",
+                    description="Failed to create new browser page",
+                    detail=str(e)[:200],
+                ).inc()
+                screenshot_generation_errors_total.labels(
+                    stage="open_page", error_type=type(e).__name__
                 ).inc()
                 raise
 
@@ -84,13 +110,26 @@ def process_image(grafana_dashboard_kiosk_url, message_body):
                 )
                 alert_sent_failed_total.labels(
                     category="image_generation_failed",
+                    http_code="none",
+                    error_code="GOTO_ERROR",
+                    description="Failed to open Grafana URL",
+                    detail=str(e)[:200],
+                ).inc()
+                screenshot_generation_errors_total.labels(
+                    stage="open_page", error_type=type(e).__name__
                 ).inc()
                 raise
 
             logger.debug(
                 "Беру период на wait, чтобы CSS прогрузился с помощью отслеживания сетевой активности"
             )
-            page.wait_for_load_state("networkidle")
+            try:
+                page.wait_for_load_state("networkidle")
+            except Exception as e:
+                screenshot_generation_errors_total.labels(
+                    stage="network_idle", error_type=type(e).__name__
+                ).inc()
+                raise
 
             scroll_height = page.evaluate("document.body.scrollHeight")
             viewport_height = page.evaluate("window.innerHeight")
@@ -111,6 +150,13 @@ def process_image(grafana_dashboard_kiosk_url, message_body):
                 logger.error(f"Ошибка при прогрузке страницы: {e}")
                 alert_sent_failed_total.labels(
                     category="image_generation_failed",
+                    http_code="none",
+                    error_code="SCROLL_ERROR",
+                    description="Failed during page scrolling or networkidle wait",
+                    detail=str(e)[:200],
+                ).inc()
+                screenshot_generation_errors_total.labels(
+                    stage="scroll", error_type=type(e).__name__
                 ).inc()
             logger.debug("Выполняю скриншот браузера с URL")
             try:
@@ -125,12 +171,23 @@ def process_image(grafana_dashboard_kiosk_url, message_body):
                 logger.error(f"Ошибка при генерации скриншота: {e}")
                 alert_sent_failed_total.labels(
                     category="image_generation_failed",
+                    http_code="none",
+                    error_code="SCREENSHOT_ERROR",
+                    description="Failed to take page screenshot",
+                    detail=str(e)[:200],
+                ).inc()
+                screenshot_generation_errors_total.labels(
+                    stage="screenshot", error_type=type(e).__name__
                 ).inc()
 
         except Exception as e:
             logger.error(f"Ошибка: {e}")
             alert_sent_failed_total.labels(
                 category="generic_error",
+                http_code="none",
+                error_code="GENERIC_ERROR",
+                description="Unexpected error inside playwright execution context",
+                detail=str(e)[:200],
             ).inc()
         finally:
             if browser is not None:
@@ -141,40 +198,105 @@ def process_image(grafana_dashboard_kiosk_url, message_body):
                     logger.error(f"Не удалось корректно закрыть браузер: {e}")
                     alert_sent_failed_total.labels(
                         category="browser_close_error",
+                        http_code="none",
+                        error_code="BROWSER_CLOSE_ERROR",
+                        description="Failed to close browser instance cleanly",
+                        detail=str(e)[:200],
                     ).inc()
 
-        logger.info(
-            f"Отправляю алерт с картинкой для: {message_body.get('tech_alertname', '')}"
+    screenshot_duration_seconds.labels(full_page=str(is_full_page)).observe(
+        time.time() - start_execution_time_duration
+    )
+
+    logger.info(
+        f"Отправляю алерт с картинкой для: {message_body.get('tech_alertname', '')}"
+    )
+
+    upstream_start_time = time.time()
+    socket = None
+
+    try:
+        socket = r.image_post(
+            url=urljoin(
+                str(os.getenv("XPLATFORM_ADDRESS")),
+                "sendMediaGroup",
+            ),
+            chat_id=message_body.get("chatId", None),
+            text=message_body.get("text", ""),
+            screenshot_path=screenshot_path,
+            timeout=15,
         )
+
+        upstream_request_duration_seconds.labels(
+            endpoint="sendMediaGroup", http_code=str(socket.status_code)
+        ).observe(time.time() - upstream_start_time)
+
+        socket.raise_for_status()
+
+        alert_sent_successful_total.labels(
+            category="image_alert", http_code=str(socket.status_code)
+        ).inc()
+
+    except requests.exceptions.HTTPError as http_err:
+        status_code = str(socket.status_code) if socket else "unknown"
+        response_text = socket.text[:200] if socket else "No response text"
+
+        upstream_request_duration_seconds.labels(
+            endpoint="sendMediaGroup", http_code=status_code
+        ).observe(time.time() - upstream_start_time)
+
+        logger.error(
+            f"Ошибка при выполнении запроса: {http_err} - {status_code} - {response_text}"
+        )
+        alert_sent_failed_total.labels(
+            category="Send_with_image_error",
+            http_code=status_code,
+            error_code="HTTP_ERROR",
+            description="Upstream returned HTTP Error status",
+            detail=response_text,
+        ).inc()
+        alert_image_sent_failed_total.labels(
+            category="Send_with_image_error",
+            http_code=status_code,
+            error_code="HTTP_ERROR",
+            description="Upstream returned HTTP Error status",
+            detail=response_text,
+        ).inc()
+    except Exception as err:
+        if socket:
+            upstream_request_duration_seconds.labels(
+                endpoint="sendMediaGroup", http_code=str(socket.status_code)
+            ).observe(time.time() - upstream_start_time)
+        else:
+            upstream_request_duration_seconds.labels(
+                endpoint="sendMediaGroup", http_code="unknown"
+            ).observe(time.time() - upstream_start_time)
+
+        print(f"Ошибка: {err}")
+        alert_sent_failed_total.labels(
+            category="Send_with_image_error",
+            http_code="unknown",
+            error_code="REQUEST_FAILED",
+            description="Network error or connection failure to upstream",
+            detail=str(err)[:200],
+        ).inc()
+        alert_image_sent_failed_total.labels(
+            category="Send_with_image_error",
+            http_code="unknown",
+            error_code="REQUEST_FAILED",
+            description="Network error or connection failure to upstream",
+            detail=str(err)[:200],
+        ).inc()
+
+    logger.debug(f"Чищу сгенерированный скриншот: {screenshot_path}")
+    if os.path.exists(screenshot_path):
         try:
-            socket = r.image_post(
-                url=urljoin(
-                    str(os.getenv("XPLATFORM_ADDRESS")),
-                    "sendMediaGroup",
-                ),
-                chat_id=message_body.get("chatId", None),
-                text=message_body.get("text", ""),
-                screenshot_path=screenshot_path,
-                timeout=15,
-            )
-            socket.raise_for_status()
-        except requests.exceptions.HTTPError as http_err:
-            logger.error(
-                f"Ошибка при выполнении запроса: {http_err} - {socket.status_code} - {socket.text}"
-            )
-            alert_sent_failed_total.labels(
-                category="Send_with_image_error",
-            ).inc()
-        except Exception as err:
-            print(f"Ошибка: {err}")
-            alert_sent_failed_total.labels(
-                category="Send_with_image_error",
-            ).inc()
-        logger.debug(f"Чищу сгенерированный скриншот: {screenshot_path}")
-        if os.path.exists(screenshot_path):
-            try:
-                os.remove(screenshot_path)
-            except Exception as e:
-                logger.error(f"Не удалось удалить скриншот: {e}")
+            os.remove(screenshot_path)
+        except Exception as e:
+            logger.error(f"Не удалось удалить скриншот: {e}")
+            disposal_errors_total.inc()
+
+    if socket:
         logger.info(f"Ответ: {socket.text}")
         return socket.text
+    return "No response from socket due to setup error"
