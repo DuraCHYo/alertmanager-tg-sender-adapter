@@ -5,5 +5,4 @@ TARGET = $(shell cat VERSION | sed 's/^v//')
 release:
 	sed -i 's/$(CURRENT)/$(TARGET)/g' README.md
 	uv version $(TARGET)
-	sed -i 's/version: $(CURRENT)/version: $(TARGET)/g' charts/$(PROJECTNAME)/Chart.yaml
-	sed -i 's/appVersion: "$(CURRENT)"/appVersion: "$(TARGET)"/g' charts/$(PROJECTNAME)/Chart.yaml
+	sed -i 's/$(CURRENT)/$(TARGET)/g' charts/$(PROJECTNAME)/Chart.yaml
