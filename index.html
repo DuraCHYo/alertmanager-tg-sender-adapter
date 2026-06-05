@@ -101,7 +101,7 @@ helm repo update</code></pre>
     </ul>
 
     <div class="section-title">Манифест репозитория</div>
-    <a href="./helm-repo/index.yaml" class="btn">Открыть index.yaml</a>
+    <a href="./index.yaml" class="btn">Открыть index.yaml</a>
 </div>
 
 <script>
@@ -113,7 +113,6 @@ helm repo update</code></pre>
         for (let line of lines) {
             const trimmedLine = line.trim();
 
-            // Парсим начало блока релиза, игнорируя пробелы (indentation)
             if (trimmedLine.startsWith('- apiVersion:')) {
                 if (currentEntry && currentEntry.version) {
                     entries.push(currentEntry);
@@ -128,22 +127,21 @@ helm repo update</code></pre>
                 if (trimmedLine.startsWith('appVersion:')) {
                     currentEntry.appVersion = trimmedLine.split('appVersion:')[1].trim().replace(/['"]/g, '');
                 }
-                // Извлекаем прямую ссылку на скачивание из GitHub Releases
-                if (trimmedLine.startsWith('- http') || trimmedLine.startsWith('- ./')) {
+                if (trimmedLine.startsWith('- http') || trimmedLine.startsWith('- ./') || trimmedLine.endsWith('.tgz')) {
+                    // Очищаем строку от синтаксиса YAML-списка, оставляя чистый путь/имя файла
                     currentEntry.rawUrl = trimmedLine.replace('- ', '').trim();
                 }
             }
         }
         
-        // Добавляем последний обработанный элемент
         if (currentEntry && currentEntry.version) {
             entries.push(currentEntry);
         }
         return entries;
     }
 
-    // Загружаем индекс, который лежит в подпапке helm-repo
-    fetch('./helm-repo/index.yaml')
+    // Загружаем index.yaml из корня ветки
+    fetch('./index.yaml')
         .then(response => {
             if (!response.ok) throw new Error('Не удалось загрузить index.yaml');
             return response.text();
@@ -158,14 +156,20 @@ helm repo update</code></pre>
                 return;
             }
 
-            // Выводим список в обратном порядке (свежие релизы сверху)
+            // Выводим новые версии вверху списка
             charts.reverse().forEach(chart => {
-                const downloadUrl = chart.rawUrl;
+                let downloadUrl = chart.rawUrl;
+                
+                // Если в индексе лежит просто имя файла (относительный путь), 
+                // превращаем его в правильную ссылку относительно корня сайта
+                if (!downloadUrl.startsWith('http://') && !downloadUrl.startsWith('https://')) {
+                    downloadUrl = `./${downloadUrl.replace(/^\.\//, '')}`;
+                }
 
                 const li = document.createElement('li');
                 li.innerHTML = `
                     <span>Версия чарта: <code>${chart.version}</code> (app: <code>${chart.appVersion || 'N/A'}</code>)</span>
-                    <a href="${downloadUrl}" target="_blank" rel="noopener noreferrer">Скачать .tgz archive</a>
+                    <a href="${downloadUrl}" download>Скачать .tgz archive</a>
                 `;
                 listElement.appendChild(li);
             });
