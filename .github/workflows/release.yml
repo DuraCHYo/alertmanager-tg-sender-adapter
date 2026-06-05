@@ -2,9 +2,7 @@ name: Release and Build Image
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - 'v*'
+
 jobs:
   release-and-docker:
     runs-on: ubuntu-latest
@@ -18,36 +16,64 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get version
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v8.2.0
+
+      - name: Get version from VERSION file
         id: get_version
         run: |
-          RAW_VER=$(cat VERSION)
+          RAW_VER=$(cat VERSION | sed 's/^v//')
           echo "VERSION=$RAW_VER" >> $GITHUB_OUTPUT
-      
+
+      - name: Run make release - update all version references
+        run: make release
+
+      - name: Run helm-docs
+        uses: losisin/helm-docs-github-action@v2.0.0
+        with:
+          chart-search-root: ./charts
+
+      - name: Commit and push version changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: update versions for release ${{ steps.get_version.outputs.VERSION }}" || true
+          git push origin master
+
+      - name: Publish Helm Chart to GitHub Pages
+        uses: somaz94/helm-chart-release-action@v1.0.4
+        with:
+          mode: single
+          chart_path: ./charts/alertmanager-tg-sender-adapter
+          gh_pages_url: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+          registry_password: ${{ secrets.GITHUB_TOKEN }}
+          enable_oci_push: false
+
       - name: Log in to Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4.2.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4.1.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4.1.0
 
       - name: Extract metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6.1.0
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=raw,value=${{ steps.get_version.outputs.VERSION }}
+            type=raw,value=v${{ steps.get_version.outputs.VERSION }}
             type=raw,value=latest
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7.2.0
         with:
           context: .
           push: true
@@ -56,8 +82,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3.0.0
         with:
-          tag_name: ${{ steps.get_version.outputs.VERSION }}
-          name: ${{ steps.get_version.outputs.VERSION }}
+          tag_name: v${{ steps.get_version.outputs.VERSION }}
+          name: v${{ steps.get_version.outputs.VERSION }}
           generate_release_notes: true

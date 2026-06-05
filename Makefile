@@ -1,12 +1,9 @@
-CURRENT = 1.1.1
-TARGET = 1.1.2
-PROJECTNAME = $(shell basename "$(PWD)")
+PROJECTNAME = alertmanager-tg-sender-adapter
+CURRENT = $(shell grep 'version = ' pyproject.toml | head -1 | sed 's/.*version = "\([^"]*\)".*/\1/')
+TARGET = $(shell cat VERSION | sed 's/^v//')
 
 release:
-	sed -i '' 's/$(CURRENT)/$(TARGET)/g' VERSION
-	sed -i '' 's/$(CURRENT)/$(TARGET)/g' README.md
+	sed -i 's/$(CURRENT)/$(TARGET)/g' README.md
 	uv version $(TARGET)
-	sed -i '' 's/$(CURRENT)/$(TARGET)/g' charts/$(PROJECTNAME)/Chart.yaml
-	rm -f charts/$(PROJECTNAME)/$(PROJECTNAME)-$(CURRENT).tgz
-	helm-docs .
-	helm package charts/$(PROJECTNAME) -d charts/$(PROJECTNAME)/
+	sed -i 's/version: $(CURRENT)/version: $(TARGET)/g' charts/$(PROJECTNAME)/Chart.yaml
+	sed -i 's/appVersion: "$(CURRENT)"/appVersion: "$(TARGET)"/g' charts/$(PROJECTNAME)/Chart.yaml
