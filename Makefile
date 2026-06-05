@@ -6,3 +6,4 @@ release:
 	sed -i 's/$(CURRENT)/$(TARGET)/g' README.md
 	uv version $(TARGET)
 	sed -i 's/$(CURRENT)/$(TARGET)/g' charts/$(PROJECTNAME)/Chart.yaml
+	sed -i 's/$(CURRENT)/$(TARGET)/g' charts/$(PROJECTNAME)/README.md
