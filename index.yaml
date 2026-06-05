@@ -1,0 +1,17 @@
+apiVersion: v1
+entries:
+  alertmanager-tg-sender-adapter:
+  - apiVersion: v2
+    appVersion: v1.1.5
+    created: "2026-06-05T18:02:13.120506366Z"
+    description: A Helm chart for Kubernetes
+    digest: f908eb5bf8160e5c7c0709784f2e6712e77e3f33c73bc68d4598b94a984d12bc
+    maintainers:
+    - email: DEpishev@alfabank.ru
+      name: Danila Epishev
+    name: alertmanager-tg-sender-adapter
+    type: application
+    urls:
+    - https://github.com/DuraCHYo/alertmanager-tg-sender-adapter/releases/download/alertmanager-tg-sender-adapter-1.1.5/alertmanager-tg-sender-adapter-1.1.5.tgz
+    version: 1.1.5
+generated: "2026-06-05T18:02:13.120512217Z"
