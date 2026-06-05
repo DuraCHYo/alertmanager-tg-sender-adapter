@@ -90,7 +90,7 @@
     
     <div class="section-title">Быстрый старт (Helm CLI)</div>
     <p>Чтобы добавить репозиторий в свой кластер, выполните команды:</p>
-    <pre><code>helm repo add durachyo https://DuraCHYo.github.io/alertmanager-tg-sender-adapter/helm-repo
+    <pre><code>helm repo add durachyo https://DuraCHYo.github.io/alertmanager-tg-sender-adapter/
 helm repo update</code></pre>
 
     <div class="section-title">Доступные релизы (Прямое скачивание)</div>
@@ -111,27 +111,38 @@ helm repo update</code></pre>
         let currentEntry = null;
 
         for (let line of lines) {
-            if (line.trim().startsWith('- apiVersion:')) {
-                if (currentEntry && currentEntry.version) entries.push(currentEntry);
+            const trimmedLine = line.trim();
+
+            // Парсим начало блока релиза, игнорируя пробелы (indentation)
+            if (trimmedLine.startsWith('- apiVersion:')) {
+                if (currentEntry && currentEntry.version) {
+                    entries.push(currentEntry);
+                }
                 currentEntry = {};
             }
+
             if (currentEntry) {
-                if (line.includes('version:')) {
-                    currentEntry.version = line.split('version:')[1].trim();
+                if (trimmedLine.startsWith('version:')) {
+                    currentEntry.version = trimmedLine.split('version:')[1].trim().replace(/['"]/g, '');
                 }
-                if (line.includes('appVersion:')) {
-                    currentEntry.appVersion = line.split('appVersion:')[1].trim().replace(/['"]/g, '');
+                if (trimmedLine.startsWith('appVersion:')) {
+                    currentEntry.appVersion = trimmedLine.split('appVersion:')[1].trim().replace(/['"]/g, '');
                 }
-                if (line.trim().startsWith('- http') || line.trim().startsWith('- ./') || (line.includes('urls:') && line.split('urls:')[1].trim())) {
-                    let url = line.includes('urls:') ? line.split('urls:')[1].trim() : line.trim().replace('- ', '');
-                    currentEntry.rawUrl = url;
+                // Извлекаем прямую ссылку на скачивание из GitHub Releases
+                if (trimmedLine.startsWith('- http') || trimmedLine.startsWith('- ./')) {
+                    currentEntry.rawUrl = trimmedLine.replace('- ', '').trim();
                 }
             }
         }
-        if (currentEntry && currentEntry.version) entries.push(currentEntry);
+        
+        // Добавляем последний обработанный элемент
+        if (currentEntry && currentEntry.version) {
+            entries.push(currentEntry);
+        }
         return entries;
     }
 
+    // Загружаем индекс, который лежит в подпапке helm-repo
     fetch('./helm-repo/index.yaml')
         .then(response => {
             if (!response.ok) throw new Error('Не удалось загрузить index.yaml');
@@ -147,16 +158,14 @@ helm repo update</code></pre>
                 return;
             }
 
-            charts.forEach(chart => {
-                // Жесткая нормализация ссылки: достаем только имя файла (например, alertmanager-tg-sender-adapter-1.1.3.tgz)
-                // и принудительно заворачиваем его в правильный путь внутри подпапки ./helm-repo/
-                const fileName = chart.rawUrl.substring(chart.rawUrl.lastIndexOf('/') + 1);
-                const correctDownloadUrl = `./helm-repo/${fileName}`;
+            // Выводим список в обратном порядке (свежие релизы сверху)
+            charts.reverse().forEach(chart => {
+                const downloadUrl = chart.rawUrl;
 
                 const li = document.createElement('li');
                 li.innerHTML = `
                     <span>Версия чарта: <code>${chart.version}</code> (app: <code>${chart.appVersion || 'N/A'}</code>)</span>
-                    <a href="${correctDownloadUrl}" download>Скачать .tgz archive</a>
+                    <a href="${downloadUrl}" target="_blank" rel="noopener noreferrer">Скачать .tgz archive</a>
                 `;
                 listElement.appendChild(li);
             });
