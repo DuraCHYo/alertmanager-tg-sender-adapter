@@ -37,12 +37,13 @@ cd alertmanager-tg-sender-adapter
 uv sync
 ```
 5. Для работы приложения есть 3 обязательных переменных среды. Установите согласно паттерну:
+`XPLATFORM_ADDRESS` используется как базовый URL, к которому дополняются пути `sendMessage` и `sendMediaGroup`.
 ```bash
-export XPLATFORM_ADDRESS=https://address-to-api/sendMessage
+export XPLATFORM_ADDRESS=https://address-to-api/tg-sender-api/api/v1/tg/
 export XPLATFORM_USERNAME=API_USERNAME
 export XPLATFORM_PASSWORD=API_PASSWORD
 ```
-6. Запустить приложение
+1. Запустить приложение
 ```bash
 uv run alertmanager-tg-sender-adapter
 ```
@@ -102,9 +103,11 @@ uv run alertmanager-tg-sender-adapter
 - `chatId` из лейбла `chatId`.
 - `alertname`, `alertgroup`, `severity`, `namespace`, `summary`, `description`.
 - `startsAt` и `endsAt`.
-- ссылку на Grafana.
-
-Для отправки изображения используется опция `tech_send_grafana_full_page`, которая определяется из лейбла `send_grafana_full_page`.
+- ссылку на дашборд Grafana в лейбле `grafana_dashboard`. 
+Ссылка должна быть полной, с протоколом, base-неймом и так далее.
+- Настройка отправлять полный дашборд или только видимую страницу `send_grafana_full_page`. 
+Принимает `True` или `False`. Дефолт: `False`
+- Токен для авторизации в лейбле `grafana_readonly_sa_token`. Требуются ReadOnly права, ничего более.
 
 ## Проверка Grafana URL
 

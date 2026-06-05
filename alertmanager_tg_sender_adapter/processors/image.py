@@ -28,6 +28,11 @@ logger = logging.getLogger(__name__)
 def process_image(grafana_dashboard_kiosk_url, message_body):
     start_execution_time_duration = time.time()
     screenshot_event_id = uuid.uuid1()
+    grafana_readonly_sa_token = message_body.get("grafana_readonly_sa_token", "")
+    if not grafana_readonly_sa_token:
+        logger.warning(
+            "Токен для Grafana не найден, хотя дашборд указан. Авторизация может быть недоступна"
+        )
     window_size = {"width": 1920, "height": 1080}
     is_full_page = bool(message_body.get("tech_send_grafana_full_page", False))
     viewport = ViewportSize(
@@ -91,9 +96,10 @@ def process_image(grafana_dashboard_kiosk_url, message_body):
                 raise
 
             logger.debug("Прокидываю в хедер энву из конфигурации приложения")
-            page.set_extra_http_headers({
-                "Authorization": f"Bearer {os.getenv('GRAFANA_SA_TOKEN')}"
-            })
+            if grafana_dashboard_kiosk_url and grafana_readonly_sa_token:
+                page.set_extra_http_headers({
+                    "Authorization": f"Bearer {grafana_readonly_sa_token}"
+                })
             logger.debug(
                 f"Выставляю размер окна {window_size.get('width')}x{window_size.get('height')}"
             )

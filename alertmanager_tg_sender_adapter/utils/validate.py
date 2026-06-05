@@ -23,7 +23,7 @@ def is_dashboard_screenshoter_url_available(grafana_dashboard_kiosk_url):
 
     if is_valid_url:
         try:
-            r = requests.get(grafana_dashboard_kiosk_url, timeout=5)
+            r = requests.get(grafana_dashboard_kiosk_url, timeout=5, verify=False)
             connection_established_ok = r.status_code == 200  # проверяем что ответ OK
         except requests.ConnectTimeout:
             logger.error(f"Timeout при подключении к {grafana_dashboard_kiosk_url}")

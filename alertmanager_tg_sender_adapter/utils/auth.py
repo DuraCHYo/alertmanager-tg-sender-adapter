@@ -24,11 +24,7 @@ class Authorization:
         json: dict,
         timeout: int | None = None,
     ) -> Response:
-        return self.session.post(
-            url,
-            json=json,
-            timeout=timeout or self.timeout,
-        )
+        return self.session.post(url, json=json, timeout=timeout or self.timeout)
 
     def image_post(
         self,

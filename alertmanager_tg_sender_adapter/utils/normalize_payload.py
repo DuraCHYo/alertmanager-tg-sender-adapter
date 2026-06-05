@@ -26,6 +26,9 @@ def parse_alertmanager_payload(payload: dict) -> list:
                 "send_grafana_full_page": alert.get("labels", {}).get(
                     "send_grafana_full_page", "False"
                 ),
+                "grafana_readonly_sa_token": alert.get("labels", {}).get(
+                    "grafana_readonly_sa_token", ""
+                ),
             }
             parsed_alerts.append(parsed_alert)
         return parsed_alerts
@@ -80,6 +83,7 @@ def combine_all_fields_to_body(alerts_list) -> list:
             "tech_severity": alert.get("severity"),
             "tech_grafana_dashboard": alert.get("grafana_dashboard"),
             "tech_send_grafana_full_page": tech_send_full_page,
+            "grafana_readonly_sa_token": alert.get("grafana_readonly_sa_token"),
         }
 
         body_to_send.append(alert_body_with_all)

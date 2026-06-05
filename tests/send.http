@@ -41,8 +41,9 @@ content-type: application/json
       "status": "firing",
       "labels": {
         "chatId": "-100",
-        "grafana_dashboard": "https://sfaflmon/...../&kiosk=true",
+        "grafana_dashboard": "https://sfaflmon/.....&kiosk=true",
         "send_grafana_full_page": "False",
+        "grafana_readonly_sa_token": "123123",
         "alertgroup": "kubernetes-apps",
         "alertname": "KubeDaemonSetMisScheduled456",
         "container": "kube-state-metrics",

@@ -40,7 +40,7 @@ def router(payload=Body()):
             alert_name = message_body.get("tech_alertname", "")
 
             # Проверяем, что URL есть и это не строка "Нет"
-            if not grafana_dashboard_url or grafana_dashboard_url == "Нет":
+            if grafana_dashboard_url == "Нет":
                 logger.info(
                     f"Для алерта '{alert_name}' нет URL. Отправка текстового сообщения."
                 )
