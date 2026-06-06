@@ -72,7 +72,6 @@ uv run alertmanager-tg-sender-adapter
 
 Дополнительные:
 
-- `GRAFANA_SA_TOKEN` — сервисный токен для доступа к Grafana при генерации скриншотов.
 - `LOG_LEVEL` — уровень логирования (`INFO` по умолчанию). Поддерживается `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`.
 - `ENABLE_METRICS` — если установлен (`True` по умолчанию), Prometheus метрики активируются.
 
@@ -103,8 +102,8 @@ uv run alertmanager-tg-sender-adapter
 - `chatId` из лейбла `chatId`.
 - `alertname`, `alertgroup`, `severity`, `namespace`, `summary`, `description`.
 - `startsAt` и `endsAt`.
-- ссылку на дашборд Grafana в лейбле `grafana_dashboard`. 
-Ссылка должна быть полной, с протоколом, base-неймом и так далее.
+- ссылку на дашборд Grafana в лейбле `grafana_dashboard`. Ссылка должна быть полной, с протоколом, base-неймом и так далее. 
+Чтобы рендер проходил "красиво" нужно добавить в конец ссылки "режим киоска" – `&kiosk=true`
 - Настройка отправлять полный дашборд или только видимую страницу `send_grafana_full_page`. 
 Принимает `True` или `False`. Дефолт: `False`
 - Токен для авторизации в лейбле `grafana_readonly_sa_token`. Требуются ReadOnly права, ничего более.
