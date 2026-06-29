@@ -1,5 +1,7 @@
 import logging
+import os
 
+import urllib3
 import uvicorn
 from fastapi import Body, FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -80,6 +82,10 @@ def health():
 
 
 def main():
+    if os.getenv("DISABLE_SSL"):
+        urllib3.disable_warnings()
+    else:
+        pass
     instrumentator = Instrumentator(
         excluded_handlers=["/metrics"],
         should_respect_env_var=True,
