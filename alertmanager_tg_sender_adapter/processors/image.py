@@ -300,14 +300,14 @@ def process_image(grafana_dashboard_kiosk_url, message_body):
             description="Network error or connection failure to upstream",
             detail=str(err)[:200],
         ).inc()
-
-    logger.debug(f"Чищу сгенерированный скриншот: {screenshot_path}")
-    if os.path.exists(screenshot_path):
-        try:
-            os.remove(screenshot_path)
-        except Exception as e:
-            logger.error(f"Не удалось удалить скриншот: {e}")
-            disposal_errors_total.inc()
+    finally:
+        logger.debug(f"Чищу сгенерированный скриншот: {screenshot_path}")
+        if os.path.exists(screenshot_path):
+            try:
+                os.remove(screenshot_path)
+            except Exception as e:
+                logger.error(f"Не удалось удалить скриншот: {e}")
+                disposal_errors_total.inc()
 
     if socket:
         logger.info(f"Ответ: {socket.text}")
