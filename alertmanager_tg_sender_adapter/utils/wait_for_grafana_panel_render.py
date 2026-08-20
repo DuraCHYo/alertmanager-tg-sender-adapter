@@ -17,10 +17,8 @@ def wait_for_grafana_render(page, timeout_ms=15000):
 
     logger.debug("Ожидаю завершения загрузки данных в панелях...")
     try:
-        page.wait_for_selector(
-            'div[class*="-panel-loading-bar-container"]',
-            state="detached",
-            timeout=timeout_ms,
+        page.locator('div[class*="-panel-loading-bar-container"]').first.wait_for(
+            state="hidden", timeout=timeout_ms
         )
         logger.debug("Все панели Grafana успешно прогрузились")
     except Exception as e:
