@@ -19,6 +19,9 @@ from alertmanager_tg_sender_adapter.utils.metrics import (
     screenshot_generation_errors_total,
     upstream_request_duration_seconds,
 )
+from alertmanager_tg_sender_adapter.utils.wait_for_grafana_panel_render import (
+    wait_for_grafana_render,
+)
 
 load_dotenv()
 r = Authorization()
@@ -142,23 +145,27 @@ def process_image(grafana_dashboard_kiosk_url, message_body):
 
             current_position = 0
             try:
+                logger.debug(
+                    "Прокручиваю страницу для инициализации lazy-loading панелей"
+                )
                 while current_position < scroll_height:
                     page.evaluate(f"window.scrollTo(0, {current_position})")
                     page.wait_for_timeout(timeout=render_timeout)
                     current_position += viewport_height
-                logger.debug(
-                    "Прогружаю всю страницу, чтобы не оставалось пустых панелей"
-                )
+
                 page.evaluate("window.scrollTo(0, 0)")
-                page.wait_for_timeout(timeout=render_timeout)
-                page.wait_for_load_state("networkidle")
+
+                wait_for_grafana_render(page, timeout_ms=15000)
+
+                page.wait_for_timeout(300)
+
             except Exception as e:
                 logger.error(f"Ошибка при прогрузке страницы: {e}")
                 alert_sent_failed_total.labels(
                     category="image_generation_failed",
                     http_code="none",
                     error_code="SCROLL_ERROR",
-                    description="Failed during page scrolling or networkidle wait",
+                    description="Failed during page scrolling or DOM wait",
                     detail=str(e)[:200],
                 ).inc()
                 screenshot_generation_errors_total.labels(
