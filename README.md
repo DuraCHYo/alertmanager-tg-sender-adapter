@@ -16,10 +16,10 @@
 - `alertmanager_tg_sender_adapter/main.py` — FastAPI приложение, HTTP-эндпоинты и запуск сервера.
 - `alertmanager_tg_sender_adapter/processors/text.py` — отправка текстового сообщения в X-Platform.
 - `alertmanager_tg_sender_adapter/processors/image.py` — генерация скриншота Grafana через Playwright и отправка медиа-группы.
-- `alertmanager_tg_sender_adapter/utils/auth.py` — авторизация и обработка HTTP-сессии.
-- `alertmanager_tg_sender_adapter/utils/normalize_payload.py` — разбор payload от Alertmanager и формирование тела сообщения.
-- `alertmanager_tg_sender_adapter/utils/validate.py` — проверка URL дашборда Grafana.
-- `alertmanager_tg_sender_adapter/utils/logger_config.py` — конфигурация логирования.
+- `alertmanager_tg_sender_adapter/authorization/auth.py` — авторизация и обработка HTTP-сессии.
+- `alertmanager_tg_sender_adapter/utils/normalizers.py` — разбор payload от Alertmanager и формирование тела сообщения.
+- `alertmanager_tg_sender_adapter/utils/validation.py` — проверка URL дашборда Grafana.
+- `alertmanager_tg_sender_adapter/utils/logger.py` — конфигурация логирования.
 - `alertmanager_tg_sender_adapter/utils/metrics.py` — Prometheus метрики.
 
 ## Быстрый старт
@@ -110,7 +110,7 @@ uv run alertmanager-tg-sender-adapter
 
 ## Проверка Grafana URL
 
-В `alertmanager_tg_sender_adapter/utils/validate.py` проверяется:
+В `alertmanager_tg_sender_adapter/utils/validation.py` проверяется:
 
 - протокол `http` или `https`;
 - наличие хоста и пути;

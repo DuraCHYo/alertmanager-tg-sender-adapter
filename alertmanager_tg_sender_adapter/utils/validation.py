@@ -13,11 +13,13 @@ def is_dashboard_screenshoter_url_available(grafana_dashboard_kiosk_url):
     splitted_url = urlparse(grafana_dashboard_kiosk_url)
     connection_established_ok = False
 
-    is_valid_url = all([
-        splitted_url.scheme in ("http", "https"),
-        bool(splitted_url.netloc),
-        bool(splitted_url.path),
-    ])
+    is_valid_url = all(
+        [
+            splitted_url.scheme in ("http", "https"),
+            bool(splitted_url.netloc),
+            bool(splitted_url.path),
+        ]
+    )
 
     kiosk_mode_notify = "kiosk" not in splitted_url.query
 
@@ -30,4 +32,4 @@ def is_dashboard_screenshoter_url_available(grafana_dashboard_kiosk_url):
         except requests.RequestException as e:
             logger.error(f"Ошибка при запросе к {grafana_dashboard_kiosk_url}: {e}")
 
-    return (is_valid_url, kiosk_mode_notify, connection_established_ok)
+    return is_valid_url, kiosk_mode_notify, connection_established_ok

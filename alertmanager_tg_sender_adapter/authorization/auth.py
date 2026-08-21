@@ -1,7 +1,20 @@
 import os
 
 import requests
+from dotenv import load_dotenv
 from requests import Response
+from urllib3 import disable_warnings
+
+load_dotenv()
+
+import logging
+
+logger = logging.getLogger(__name__)
+verify_ssl = os.getenv("VERIFY_SSL", "true").lower() != "false"
+
+if not verify_ssl:
+    disable_warnings()
+    logger.warning("SSL отключен")
 
 
 class Authorization:
@@ -24,7 +37,19 @@ class Authorization:
         json: dict,
         timeout: int | None = None,
     ) -> Response:
-        return self.session.post(url, json=json, timeout=timeout or self.timeout)
+        """
+
+        Args:
+            url: os.getenv("XPLATFORM_ADDRESS")
+            json: "alert body"
+            timeout: 15
+
+        Returns:
+            Response()
+        """
+        return self.session.post(
+            url, json=json, timeout=timeout or self.timeout, verify=verify_ssl
+        )
 
     def image_post(
         self,
@@ -34,6 +59,18 @@ class Authorization:
         screenshot_path: str,
         timeout: int | None = None,
     ) -> Response:
+        """
+
+        Args:
+            url: os.getenv("XPLATFORM_ADDRESS")
+            chat_id: "-100..."
+            text: "Alert body"
+            screenshot_path: "Pathlib"
+            timeout: 15
+
+        Returns:
+            Response()
+        """
         with open(screenshot_path, "rb") as f:
             files = {
                 "imageFiles": (
@@ -53,4 +90,5 @@ class Authorization:
                 data=data,
                 files=files,
                 timeout=timeout or self.timeout,
+                verify=verify_ssl,
             )

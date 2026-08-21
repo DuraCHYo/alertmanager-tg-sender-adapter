@@ -12,8 +12,10 @@ dependencies = [
     "playwright>=1.60.0",
     "prometheus-client>=0.25.0",
     "prometheus-fastapi-instrumentator>=8.0.0",
+    "pydantic>=2.13.4",
     "python-dotenv>=1.2.2",
     "requests>=2.34.2",
+    "urllib3>=2.7.0",
     "uvicorn>=0.48.0",
 ]
 [project.scripts]
@@ -27,4 +29,7 @@ build-backend = "setuptools.build_meta"
 where = ["."]
 
 [dependency-groups]
-dev = []
+dev = [
+    "ruff>=0.16.4",
+    "ty>=0.0.73",
+]

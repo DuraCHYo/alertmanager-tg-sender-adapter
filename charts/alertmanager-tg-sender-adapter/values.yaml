@@ -190,7 +190,7 @@ tolerations: []
 affinity: {}
 
 metrics:
-  # Enable /metrics endpoints with FastAPI prometheus metrics
+  # Enable /metrics api with FastAPI prometheus metrics
   enabled: true
   vmservicescrape:
     enabled: true
