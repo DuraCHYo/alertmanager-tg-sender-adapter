@@ -1,5 +1,5 @@
 class Config:
-    VERSION_NUMBER = "1.1.8"
+    VERSION_NUMBER = "2.0.0"
     EXCLUDED_HANDLERS = [
         "/healthz",
         "/version",
