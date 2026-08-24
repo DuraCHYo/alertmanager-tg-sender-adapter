@@ -9,6 +9,7 @@ from alertmanager_tg_sender_adapter.api import system
 from alertmanager_tg_sender_adapter.api.target import route_messages
 from alertmanager_tg_sender_adapter.config import config
 from alertmanager_tg_sender_adapter.model.data_model import AlertmanagerPayload
+from alertmanager_tg_sender_adapter.model.filter import EndpointFilter
 from alertmanager_tg_sender_adapter.utils.logger import init_logging
 from alertmanager_tg_sender_adapter.utils.normalizers import build_telegram_messages
 
@@ -20,6 +21,8 @@ load_dotenv()
 log_level = init_logging()
 
 logger = logging.getLogger(__name__)
+
+logging.getLogger("uvicorn.access").addFilter(EndpointFilter(config.EXCLUDED_HANDLERS))
 
 app = FastAPI()
 
