@@ -138,17 +138,20 @@ async def process_image(grafana_dashboard_kiosk_url: str, message: PreparedTeleg
             timeout=15,
         )
 
+        status_code_str = str(socket.status_code)
         upstream_request_duration_seconds.labels(
-            endpoint="sendMediaGroup", http_code=str(socket.status_code)
+            endpoint="sendMediaGroup", http_code=str(status_code_str)
         ).observe(time.time() - upstream_start_time)
 
         socket.raise_for_status()
         alert_sent_successful_total.labels(
-            category="image_alert", http_code=str(socket.status_code)
+            category="image_alert", http_code=str(status_code_str)
         ).inc()
+        
+        logger.info(f"Ответ апстрима [{status_code_str}]: {socket.text}")
 
     except requests.exceptions.HTTPError as http_err:
-        status_code = str(socket.status_code) if socket else "unknown"
+        status_code = str(status_code_str) if socket else "unknown"
         response_text = socket.text[:200] if socket else "No response text"
 
         logger.error(

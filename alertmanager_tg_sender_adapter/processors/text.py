@@ -46,7 +46,6 @@ def process_text(message: PreparedTelegramAlert):
     socket = None
 
     try:
-        # Конвертируем Pydantic-модель в dict для передачи в HTTP-клиент
         payload = message.model_dump()
 
         socket = r.post(
