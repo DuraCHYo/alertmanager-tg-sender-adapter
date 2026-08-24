@@ -1,13 +1,16 @@
 import logging
+import asyncio
 
 import uvicorn
 from dotenv import load_dotenv
+from contextlib import asynccontextmanager
 from fastapi import BackgroundTasks, Body, FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from alertmanager_tg_sender_adapter.api import system
 from alertmanager_tg_sender_adapter.api.target import route_messages
 from alertmanager_tg_sender_adapter.config import config
+from alertmanager_tg_sender_adapter.render.browser_pool import BrowserManager
 from alertmanager_tg_sender_adapter.model.data_model import AlertmanagerPayload
 from alertmanager_tg_sender_adapter.model.filter import EndpointFilter
 from alertmanager_tg_sender_adapter.utils.logger import init_logging
@@ -24,7 +27,21 @@ logger = logging.getLogger(__name__)
 
 logging.getLogger("uvicorn.access").addFilter(EndpointFilter(config.EXCLUDED_HANDLERS))
 
-app = FastAPI()
+browser_manager = BrowserManager()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Запуск браузера при старте приложения
+    logger.info("Запуск браузера...")
+    await browser_manager.start()
+    yield
+    # Остановка браузера при завершении приложения
+    logger.info("Остановка браузера...")
+    await browser_manager.stop()
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.include_router(system.router)
 
@@ -38,7 +55,7 @@ instrumentation = Instrumentator(
 
 
 @app.post("/api/v1/alertmanager-tg-sender-adapter/send")
-def entrypoint(payload: AlertmanagerPayload, background_tasks: BackgroundTasks):
+async def entrypoint(payload: AlertmanagerPayload, background_tasks: BackgroundTasks):
     messages = build_telegram_messages(payload)
     background_tasks.add_task(route_messages, messages)
     return {"status": "accepted", "queued": len(messages)}

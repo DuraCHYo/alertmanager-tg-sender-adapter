@@ -1,11 +1,12 @@
 import logging
 import os
+import asyncio
 import time
 import uuid
 from urllib.parse import urljoin
 
 import requests
-from playwright.sync_api import ViewportSize, sync_playwright
+from playwright.async_api import ViewportSize
 
 from alertmanager_tg_sender_adapter.authorization.auth import Authorization
 from alertmanager_tg_sender_adapter.utils.metrics import (
@@ -21,6 +22,7 @@ from alertmanager_tg_sender_adapter.utils.metrics import (
 from alertmanager_tg_sender_adapter.render.grafana import (
     wait_for_grafana_render,
 )
+from alertmanager_tg_sender_adapter.render.browser_pool import BrowserManager
 from alertmanager_tg_sender_adapter.processors.text import process_text
 from alertmanager_tg_sender_adapter.model.data_model import PreparedTelegramAlert
 from dotenv import load_dotenv
@@ -29,8 +31,10 @@ load_dotenv()
 r = Authorization()
 logger = logging.getLogger(__name__)
 
+browser_manager = BrowserManager()
 
-def process_image(grafana_dashboard_kiosk_url: str, message: PreparedTelegramAlert):
+
+async def process_image(grafana_dashboard_kiosk_url: str, message: PreparedTelegramAlert):
     start_execution_time_duration = time.time()
     screenshot_event_id = uuid.uuid1()
 
@@ -51,68 +55,62 @@ def process_image(grafana_dashboard_kiosk_url: str, message: PreparedTelegramAle
     ).inc()
 
     screenshot_success = False
+    page = None
 
-    with sync_playwright() as p:
-        chromium_args = [
-            "--disable-dev-shm-usage",
-            "--ignore-certificate-errors",
-        ]
-        browser = None
-        try:
-            render_timeout = 2500 if is_full_page else 500
-            browser = p.chromium.launch(args=chromium_args)
-            page = browser.new_page()
+    try:
+        render_timeout = 2500 if is_full_page else 500
+        page = await browser_manager.create_page()
 
-            if grafana_dashboard_kiosk_url and grafana_readonly_sa_token:
-                page.set_extra_http_headers(
-                    {"Authorization": f"Bearer {grafana_readonly_sa_token}"}
-                )
-
-            page.set_viewport_size(viewport)
-            page.goto(grafana_dashboard_kiosk_url, wait_until="domcontentloaded")
-            page.wait_for_load_state("networkidle")
-
-            scroll_height = page.evaluate("document.body.scrollHeight")
-            viewport_height = page.evaluate("window.innerHeight")
-
-            current_position = 0
-            while current_position < scroll_height:
-                page.evaluate(f"window.scrollTo(0, {current_position})")
-                page.wait_for_timeout(timeout=render_timeout)
-                current_position += viewport_height
-
-            page.evaluate("window.scrollTo(0, 0)")
-            wait_for_grafana_render(page, timeout_ms=15000)
-            page.wait_for_timeout(300)
-
-            page.screenshot(
-                path=screenshot_path,
-                full_page=is_full_page,
-                animations="disabled",
+        if grafana_dashboard_kiosk_url and grafana_readonly_sa_token:
+            await page.set_extra_http_headers(
+                {"Authorization": f"Bearer {grafana_readonly_sa_token}"}
             )
-            screenshot_success = True
-            logger.info(f"Скриншот создан успешно: {screenshot_event_id}.png")
 
-        except Exception as e:
-            logger.error(
-                f"Ошибка при генерации скриншота Playwright: {e}", exc_info=True
-            )
-            alert_sent_failed_total.labels(
-                category="image_generation_failed",
-                http_code="none",
-                error_code="PLAYWRIGHT_ERROR",
-                description="Failed during browser automation",
-                detail=str(e)[:200],
-            ).inc()
-            screenshot_generation_errors_total.labels(
-                stage="execution", error_type=type(e).__name__
-            ).inc()
-        finally:
-            if browser is not None:
-                try:
-                    browser.close()
-                except Exception as e:
-                    logger.error(f"Не удалось закрыть браузер: {e}")
+        await page.set_viewport_size(viewport)
+        await page.goto(grafana_dashboard_kiosk_url, wait_until="domcontentloaded")
+        await page.wait_for_load_state("networkidle")
+
+        scroll_height = await page.evaluate("document.body.scrollHeight")
+        viewport_height = await page.evaluate("window.innerHeight")
+
+        current_position = 0
+        while current_position < scroll_height:
+            await page.evaluate(f"window.scrollTo(0, {current_position})")
+            await page.wait_for_timeout(timeout=render_timeout)
+            current_position += viewport_height
+
+        await page.evaluate("window.scrollTo(0, 0)")
+        await wait_for_grafana_render(page, timeout_ms=15000)
+        await page.wait_for_timeout(300)
+
+        await page.screenshot(
+            path=screenshot_path,
+            full_page=is_full_page,
+            animations="disabled",
+        )
+        screenshot_success = True
+        logger.info(f"Скриншот создан успешно: {screenshot_event_id}.png")
+
+    except Exception as e:
+        logger.error(
+            f"Ошибка при генерации скриншота Playwright: {e}", exc_info=True
+        )
+        alert_sent_failed_total.labels(
+            category="image_generation_failed",
+            http_code="none",
+            error_code="PLAYWRIGHT_ERROR",
+            description="Failed during browser automation",
+            detail=str(e)[:200],
+        ).inc()
+        screenshot_generation_errors_total.labels(
+            stage="execution", error_type=type(e).__name__
+        ).inc()
+    finally:
+        if page is not None:
+            try:
+                await browser_manager.close_page(page)
+            except Exception as e:
+                logger.error(f"Не удалось закрыть страницу: {e}")
 
     screenshot_duration_seconds.labels(full_page=str(is_full_page)).observe(
         time.time() - start_execution_time_duration
