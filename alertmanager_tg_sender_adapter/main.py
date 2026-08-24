@@ -2,7 +2,7 @@ import logging
 
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import Body, FastAPI
+from fastapi import BackgroundTasks, Body, FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from alertmanager_tg_sender_adapter.api import system
@@ -38,13 +38,10 @@ instrumentation = Instrumentator(
 
 
 @app.post("/api/v1/alertmanager-tg-sender-adapter/send")
-def entrypoint(payload: AlertmanagerPayload):
+def entrypoint(payload: AlertmanagerPayload, background_tasks: BackgroundTasks):
     messages = build_telegram_messages(payload)
-    try:
-        route_messages(messages)
-        return {"status": "ok", "processed": len(messages)}
-    except Exception as e:
-        return {"error": str(e)}
+    background_tasks.add_task(route_messages, messages)
+    return {"status": "accepted", "queued": len(messages)}
 
 
 def main():
