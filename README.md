@@ -167,3 +167,39 @@ docker run --rm --name alertmanager-tg-sender-adapter -p 8080:8080 -e XPLATFORM_
 - `GRAFANA_SA_TOKEN` требуется только при генерации скриншотов Grafana.
 - `XPLATFORM_ADDRESS` используется как базовый URL, к которому дополняются пути `sendMessage` и `sendMediaGroup`.
 - Логирование настраивается через `LOG_LEVEL`.
+
+## Поддержка Grafana и OpenSearch алертов
+
+Адаптер поддерживает приём алертов не только от Alertmanager, но и напрямую от Grafana (включая OpenSearch алерты).
+
+### Настройка в Grafana
+
+1. Создайте новый контакт поинт в Grafana:
+   - Тип: Webhook
+   - URL: `http://ваш-адаптер:8080/api/v1/alertmanager-tg-sender-adapter/send`
+   - HTTP Method: POST
+
+2. В правилах алертов добавьте обязательный лейбл `chatId` с ID вашего Telegram чата:
+   ```
+   labels:
+     chatId: 123456789
+   ```
+
+3. Любые дополнительные поля из Grafana (grafana_folder, imageRequired, isOpenSearch и т.д.) будут проигнорированы при валидации, но не вызовут ошибку.
+
+### Пример настройки Grafana alert rule
+
+```yaml
+groups:
+  - name: OpenSearch
+    rules:
+      - alert: ALERT_OPENSEARCH
+        expr: ...
+        labels:
+          chatId: 123456789  # Обязательный лейбл
+        annotations:
+          summary: "Сводка алерта"
+          description: "Описание проблемы"
+```
+
+Адаптер автоматически определит формат пейлоада и обработает его корректно благодаря настройке `extra="allow"` в Pydantic моделях.
