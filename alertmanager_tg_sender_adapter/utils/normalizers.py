@@ -39,26 +39,31 @@ def build_telegram_messages(
 
         add_container = f"Контейнер: {labels.container}\n" if labels.container else ""
         add_instance = f"Нода: {labels.instance}\n" if labels.instance else ""
+        add_namespace= f'Неймспейс: {labels.namespace}\n' if labels.namespace else ""
+        add_grafana_dashboard_url = f"Ссылка на Grafana: {labels.grafana_dashboard}\n" if labels.grafana_dashboard else ""
+        add_description = f"Описание {annotations.description}\n" if annotations.description else ""
+        add_alert_group = f"Группа: {labels.alertgroup}\n" if labels.alertgroup else ""
+        add_severity = f"Влияние: {labels.severity}\n" if labels.severity else ""
 
         starts_at_str = alert.startsAt.isoformat()
 
         text = (
             f"Статус: {state}\n"
-            f"Группа: {labels.alertgroup}\n"
+            f"{add_alert_group}"
             f"Название: {labels.alertname}\n"
             "---------\n"
-            f"Влияние: {labels.severity}\n"
-            f"Неймспейс: {labels.namespace or ''}\n"
+            f"{add_severity}"
+            f"{add_namespace}"
             f"{add_instance}"
             f"{add_container}"
             "---------\n"
             f"Заголовок: {annotations.summary}\n"
-            f"Описание: {annotations.description}\n"
+            f"{add_description}"
             "---------\n"
             f"Время начала проблемы: {starts_at_str}\n"
             f"{ends_at_line}"
             "---------\n"
-            f"Ссылка на Grafana: {labels.grafana_dashboard}\n"
+            f"{add_grafana_dashboard_url}"
             "---------"
         )
 
