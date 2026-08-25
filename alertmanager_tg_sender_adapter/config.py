@@ -1,5 +1,5 @@
 class Config:
-    VERSION_NUMBER = "2.0.7"
+    VERSION_NUMBER = "2.0.8"
     EXCLUDED_HANDLERS = [
         "/health",
         "/version",
