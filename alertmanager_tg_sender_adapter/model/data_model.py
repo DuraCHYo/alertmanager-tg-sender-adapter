@@ -53,3 +53,11 @@ class PreparedTelegramAlert(BaseModel):
     tech_grafana_dashboard: str
     tech_send_grafana_full_page: bool
     grafana_readonly_sa_token: str
+    # Дополнительные поля для точной дедупликации
+    tech_alertgroup: str = ""
+    tech_instance: str = ""
+    tech_namespace: str = ""
+    tech_container: str = ""
+    tech_pod: str = ""
+    # Для поддержки кастомных полей (например, project)
+    tech_extra_labels: dict = {}
