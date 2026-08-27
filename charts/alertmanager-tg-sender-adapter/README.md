@@ -1,6 +1,6 @@
 # alertmanager-tg-sender-adapter
 
-![Version: 2.0.9](https://img.shields.io/badge/Version-2.0.9-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v2.0.9](https://img.shields.io/badge/AppVersion-v2.0.9-informational?style=flat-square)
+![Version: 2.0.10](https://img.shields.io/badge/Version-2.0.10-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v2.0.10](https://img.shields.io/badge/AppVersion-v2.0.10-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -54,6 +54,7 @@ A Helm chart for Kubernetes
 | readinessProbe.httpGet.port | string | `"http"` |  |
 | readinessProbe.initialDelaySeconds | int | `0` |  |
 | readinessProbe.periodSeconds | int | `5` |  |
+| replicaCount | int | `3` |  |
 | resources | object | `{}` |  |
 | securityContext | object | `{}` |  |
 | service.enabled | bool | `true` |  |
