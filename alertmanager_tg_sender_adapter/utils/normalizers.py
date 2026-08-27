@@ -64,7 +64,6 @@ def build_telegram_messages(
             f"{ends_at_line}"
             "---------\n"
             f"{add_grafana_dashboard_url}"
-            "---------"
         )
 
         # Собираем дополнительные лейблы для дедупликации (игнорируя системные поля)

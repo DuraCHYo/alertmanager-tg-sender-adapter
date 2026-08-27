@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 class AlertLabels(BaseModel):
     model_config = ConfigDict(extra="allow")
     
-    chatId: int
+    chatId: str
     alertname: str
     alertgroup: str = ""
     severity: str = ""
@@ -45,7 +45,7 @@ class AlertmanagerPayload(BaseModel):
 
 
 class PreparedTelegramAlert(BaseModel):
-    chatId: int
+    chatId: str
     text: str
     tech_alertname: str
     tech_alertstate: str

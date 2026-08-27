@@ -39,7 +39,7 @@ uv sync
 5. Для работы приложения есть 3 обязательных переменных среды. Установите согласно паттерну:
 `XPLATFORM_ADDRESS` используется как базовый URL, к которому дополняются пути `sendMessage` и `sendMediaGroup`.
 ```bash
-export XPLATFORM_ADDRESS=https://address-to-api/tg-sender-api/api/v1/tg/
+export XPLATFORM_ADDRESS=https://address-to-api/achat-sender-api/api/v1/achat/
 export XPLATFORM_USERNAME=API_USERNAME
 export XPLATFORM_PASSWORD=API_PASSWORD
 ```
@@ -207,10 +207,10 @@ docker run --rm --name alertmanager-tg-sender-adapter -p 8080:8080 -e XPLATFORM_
    - URL: `http://ваш-адаптер:8080/api/v1/alertmanager-tg-sender-adapter/send`
    - HTTP Method: POST
 
-2. В правилах алертов добавьте обязательный лейбл `chatId` с ID вашего Telegram чата:
+2. В правилах алертов добавьте обязательный лейбл `chatId` с ID вашего канала:
    ```
    labels:
-     chatId: 123456789
+     chatId: 123-abc-456-zxc-7v8b9n
    ```
 
 3. Любые дополнительные поля из Grafana (grafana_folder, imageRequired, isOpenSearch и т.д.) будут проигнорированы при валидации, но не вызовут ошибку.
@@ -224,7 +224,7 @@ groups:
       - alert: ALERT_OPENSEARCH
         expr: ...
         labels:
-          chatId: 123456789  # Обязательный лейбл
+          chatId: 123-abc-456-zxc-7v8b9n  # Обязательный лейбл
         annotations:
           summary: "Сводка алерта"
           description: "Описание проблемы"
