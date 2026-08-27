@@ -527,6 +527,12 @@
       "title": "readinessProbe",
       "type": "object"
     },
+    "replicaCount": {
+      "default": 3,
+      "description": "Set replicaCount for pod. Default = 3",
+      "title": "replicaCount",
+      "type": "integer"
+    },
     "resources": {
       "additionalProperties": true,
       "required": [],
@@ -670,6 +676,7 @@
   },
   "required": [
     "image",
+    "replicaCount",
     "imagePullSecrets",
     "nameOverride",
     "fullnameOverride",
