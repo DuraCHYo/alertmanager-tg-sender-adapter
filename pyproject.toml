@@ -1,6 +1,6 @@
 [project]
 name = "alertmanager-tg-sender-adapter"
-version = "2.0.11"
+version = "2.0.12"
 description = "Add your description here"
 readme = "README.md"
 authors = [
