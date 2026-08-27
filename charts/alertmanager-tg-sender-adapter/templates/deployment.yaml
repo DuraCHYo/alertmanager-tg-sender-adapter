@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "alertmanager-tg-sender-adapter.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount | default 3 }}
   selector:
     matchLabels:
       {{- include "alertmanager-tg-sender-adapter.selectorLabels" . | nindent 6 }}
