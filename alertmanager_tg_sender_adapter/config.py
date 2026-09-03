@@ -8,7 +8,7 @@ load_dotenv()
 @dataclass(frozen=True)
 class Config:
     """Application configuration dataclass."""
-    VERSION_NUMBER: str = "2.0.12"
+    VERSION_NUMBER: str = "2.1.0"
     EXCLUDED_HANDLERS: tuple[str, ...] = (
         "/health",
         "/version",
