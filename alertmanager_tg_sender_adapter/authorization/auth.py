@@ -1,13 +1,12 @@
+import logging
 import os
 
 import requests
 from dotenv import load_dotenv
 from requests import Response
 from urllib3 import disable_warnings
-
+from alertmanager_tg_sender_adapter.config import app_config
 load_dotenv()
-
-import logging
 
 logger = logging.getLogger(__name__)
 verify_ssl = os.getenv("VERIFY_SSL", "true").lower() != "false"
@@ -20,16 +19,15 @@ if not verify_ssl:
 class Authorization:
     def __init__(
         self,
-        username: str = "",
-        password: str = "",
         timeout: int = 15,
     ) -> None:
-        self.username = os.getenv("XPLATFORM_USERNAME", "None")
-        self.password = os.getenv("XPLATFORM_PASSWORD", "None")
+        self.username: str = os.getenv("XPLATFORM_USERNAME", "")
+        self.password: str = os.getenv("XPLATFORM_PASSWORD", "")
         self.timeout = timeout
 
         self.session = requests.Session()
         self.session.auth = (self.username, self.password)
+        self.session.verify = verify_ssl
 
     def post(
         self,
@@ -40,8 +38,8 @@ class Authorization:
         """
 
         Args:
-            url: os.getenv("XPLATFORM_ADDRESS")
-            json: "alert body"
+            url: urljoin(app_config.XPLATFORM_ADDRESS, endpoint_type)
+            JSON: "alert body"
             timeout: 15
 
         Returns:
@@ -54,7 +52,7 @@ class Authorization:
     def image_post(
         self,
         url: str,
-        chat_id: int,
+        chat_id: str,
         text: str,
         screenshot_path: str,
         timeout: int | None = None,
@@ -62,10 +60,10 @@ class Authorization:
         """
 
         Args:
-            url: os.getenv("XPLATFORM_ADDRESS")
+            url: urljoin(app_config.XPLATFORM_ADDRESS, endpoint_type)
             chat_id: "-100..."
             text: "Alert body"
-            screenshot_path: "Pathlib"
+            screenshot_path: "pathlib"
             timeout: 15
 
         Returns:

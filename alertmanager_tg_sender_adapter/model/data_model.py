@@ -1,11 +1,10 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AlertLabels(BaseModel):
     model_config = ConfigDict(extra="allow")
-    
     chatId: str
     alertname: str
     alertgroup: str = ""
@@ -21,14 +20,12 @@ class AlertLabels(BaseModel):
 
 class AlertAnnotations(BaseModel):
     model_config = ConfigDict(extra="allow")
-    
     summary: str = ""
     description: str = ""
 
 
 class AlertItem(BaseModel):
     model_config = ConfigDict(extra="allow")
-    
     status: str
     startsAt: datetime
     endsAt: datetime | None = None
@@ -38,7 +35,6 @@ class AlertItem(BaseModel):
 
 class AlertmanagerPayload(BaseModel):
     model_config = ConfigDict(extra="allow")
-    
     receiver: str = ""
     status: str = ""
     alerts: list[AlertItem] = Field(default_factory=list)

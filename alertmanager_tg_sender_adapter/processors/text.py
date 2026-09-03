@@ -7,8 +7,9 @@ from urllib.parse import urljoin
 import requests
 from dotenv import load_dotenv
 
-from alertmanager_tg_sender_adapter.model.data_model import PreparedTelegramAlert
 from alertmanager_tg_sender_adapter.authorization.auth import Authorization
+from alertmanager_tg_sender_adapter.config import app_config
+from alertmanager_tg_sender_adapter.model.data_model import PreparedTelegramAlert
 from alertmanager_tg_sender_adapter.utils.metrics import (
     alert_sent_failed_total,
     alert_sent_successful_total,
@@ -38,9 +39,8 @@ def process_text(message: PreparedTelegramAlert):
     incoming_alerts_total.labels(has_dashboard="False", full_page="False").inc()
 
     logger.info(f"Отправляю текстовое сообщение для алерта: {message.tech_alertname}")
-
-    base_url = os.getenv("XPLATFORM_ADDRESS", "")
-    target_url = urljoin(base_url, "sendMessage")
+    endpoint_type = app_config.ACHAT_DEFAULT_ENDPOINT if not message.chatId.startswith("-") else app_config.TG_DEFAULT_ENDPOINT
+    target_url = urljoin(app_config.XPLATFORM_ADDRESS,f"{endpoint_type}/sendMessage")
 
     upstream_start_time = time.time()
     socket = None
@@ -92,7 +92,6 @@ def process_text(message: PreparedTelegramAlert):
                 ],
                 detail=str(err_data.get("detail", socket.text))[:200],
             ).inc()
-
             socket.raise_for_status()
 
     except requests.exceptions.RequestException as err:

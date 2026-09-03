@@ -1,5 +1,6 @@
-import logging
 import asyncio
+import logging
+
 from playwright.async_api import async_playwright
 
 logger = logging.getLogger(__name__)
@@ -42,8 +43,8 @@ class BrowserManager:
                 ]
                 self._browser = await self._playwright.chromium.launch(args=chromium_args)
                 logger.info("Браузер успешно запущен")
-            except Exception as e:
-                logger.error(f"Ошибка при запуске браузера: {e}", exc_info=True)
+            except Exception:
+                logger.exception("Ошибка при запуске браузера")
                 raise
 
     async def stop(self):
@@ -60,8 +61,8 @@ class BrowserManager:
                 self._browser = None
                 self._playwright = None
                 logger.info("Браузер остановлен")
-            except Exception as e:
-                logger.error(f"Ошибка при остановке браузера: {e}", exc_info=True)
+            except Exception:
+                logger.exception("Ошибка при остановке браузера")
 
     async def get_browser(self):
         """Возвращает экземпляр браузера. Если не запущен - запускает."""
@@ -81,5 +82,5 @@ class BrowserManager:
         try:
             if page:
                 await page.close()
-        except Exception as e:
-            logger.error(f"Ошибка при закрытии страницы: {e}")
+        except Exception:
+            logger.exception("Ошибка при закрытии страницы")

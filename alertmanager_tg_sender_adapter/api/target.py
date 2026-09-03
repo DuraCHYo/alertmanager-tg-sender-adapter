@@ -1,6 +1,7 @@
-import logging
 import hashlib
+import logging
 import time
+
 from alertmanager_tg_sender_adapter.processors.image import process_image
 from alertmanager_tg_sender_adapter.processors.text import process_text
 from alertmanager_tg_sender_adapter.utils.validation import (
@@ -16,7 +17,7 @@ _DUPLICATION_WINDOW = 60  # sec
 
 def _normalize_field_name(field_name: str) -> str:
     """Нормализует имя поля, удаляя суффиксы типа .keyword, .text и т.д.
-    
+
     Примеры:
     - namespace.keyword -> namespace
     - namespace.text -> namespace
@@ -33,18 +34,18 @@ def _normalize_field_name(field_name: str) -> str:
 
 def _get_alert_fingerprint(message: PreparedTelegramAlert) -> str:
     """Генерирует уникальный fingerprint для алерта на основе множества полей."""
-    
+
     # Основные поля
     fields = [
         message.tech_alertname,
-        str(message.chatId),
+        message.chatId,
         message.tech_alertgroup,
         message.tech_instance,
         message.tech_namespace,
         message.tech_container,
         message.tech_pod,
     ]
-    
+
     # Сортируем дополнительные лейблы для consistency
     if message.tech_extra_labels:
         sorted_labels = sorted(message.tech_extra_labels.items())
@@ -52,19 +53,21 @@ def _get_alert_fingerprint(message: PreparedTelegramAlert) -> str:
             # Нормализуем имя поля (namespace.keyword -> namespace)
             normalized_key = _normalize_field_name(key)
             fields.append(f"{normalized_key}={value}")
-    
+
     # Создаём строку для хеширования
     fingerprint_data = "|".join(fields)
-    
+
     return hashlib.md5(fingerprint_data.encode()).hexdigest()
 
 
 def _is_duplicate(fingerprint: str) -> bool:
     """Проверяет, был ли уже обработан такой алерт."""
-    if fingerprint in _processed_alerts:
-        if time.time() - _processed_alerts[fingerprint] < _DUPLICATION_WINDOW:
-            logger.debug(f"Обнаружен дубликат алерта (fingerprint: {fingerprint[:16]}...)")
-            return True
+    last_seen = _processed_alerts.get(fingerprint)
+
+    if last_seen and (time.time() - last_seen < _DUPLICATION_WINDOW):
+        logger.debug(f"Обнаружен дубликат алерта (fingerprint: {fingerprint[:16]}...)")
+        return True
+
     _processed_alerts[fingerprint] = time.time()
     return False
 
@@ -114,8 +117,6 @@ async def route_messages(messages: list[PreparedTelegramAlert]):
             )
             await process_image(dashboard_url, message)
 
-        except Exception as e:
-            logger.error(
-                f"Ошибка при обработке алерта '{message.tech_alertname}': {e}",
-                exc_info=True,
-            )
+        except Exception:
+            logger.exception(
+                f"Ошибка при обработке алерта '{message.tech_alertname}'")

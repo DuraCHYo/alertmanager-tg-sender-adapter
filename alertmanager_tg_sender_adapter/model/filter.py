@@ -1,8 +1,8 @@
 import logging
 
-from alertmanager_tg_sender_adapter.config import config
+from alertmanager_tg_sender_adapter.config import app_config
 
-excluded_endpoints = config.EXCLUDED_HANDLERS
+excluded_endpoints = app_config.EXCLUDED_HANDLERS
 
 
 class EndpointFilter(logging.Filter):
@@ -11,5 +11,5 @@ class EndpointFilter(logging.Filter):
 
     def filter(self, record: logging.LogRecord):
         access_log = record.args
-        host, method, endpoint, version, rc = access_log  # ty: ignore[not-iterable]
+        _, _, endpoint, _, _ = access_log  # ty: ignore[not-iterable]
         return endpoint not in self.excluded_endpoints

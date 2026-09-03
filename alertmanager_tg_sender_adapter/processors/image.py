@@ -1,14 +1,21 @@
 import logging
 import os
-import asyncio
 import time
 import uuid
 from urllib.parse import urljoin
 
 import requests
+from dotenv import load_dotenv
 from playwright.async_api import ViewportSize
 
 from alertmanager_tg_sender_adapter.authorization.auth import Authorization
+from alertmanager_tg_sender_adapter.config import app_config
+from alertmanager_tg_sender_adapter.model.data_model import PreparedTelegramAlert
+from alertmanager_tg_sender_adapter.processors.text import process_text
+from alertmanager_tg_sender_adapter.render.browser_pool import BrowserManager
+from alertmanager_tg_sender_adapter.render.grafana import (
+    wait_for_grafana_render,
+)
 from alertmanager_tg_sender_adapter.utils.metrics import (
     alert_image_sent_failed_total,
     alert_sent_failed_total,
@@ -19,13 +26,6 @@ from alertmanager_tg_sender_adapter.utils.metrics import (
     screenshot_generation_errors_total,
     upstream_request_duration_seconds,
 )
-from alertmanager_tg_sender_adapter.render.grafana import (
-    wait_for_grafana_render,
-)
-from alertmanager_tg_sender_adapter.render.browser_pool import BrowserManager
-from alertmanager_tg_sender_adapter.processors.text import process_text
-from alertmanager_tg_sender_adapter.model.data_model import PreparedTelegramAlert
-from dotenv import load_dotenv
 
 load_dotenv()
 r = Authorization()
@@ -92,8 +92,8 @@ async def process_image(grafana_dashboard_kiosk_url: str, message: PreparedTeleg
         logger.info(f"Скриншот создан успешно: {screenshot_event_id}.png")
 
     except Exception as e:
-        logger.error(
-            f"Ошибка при генерации скриншота Playwright: {e}", exc_info=True
+        logger.exception(
+            "Ошибка при генерации скриншота Playwright"
         )
         alert_sent_failed_total.labels(
             category="image_generation_failed",
@@ -109,8 +109,8 @@ async def process_image(grafana_dashboard_kiosk_url: str, message: PreparedTeleg
         if page is not None:
             try:
                 await browser_manager.close_page(page)
-            except Exception as e:
-                logger.error(f"Не удалось закрыть страницу: {e}")
+            except Exception:
+                logger.exception("Не удалось закрыть страницу")
 
     screenshot_duration_seconds.labels(full_page=str(is_full_page)).observe(
         time.time() - start_execution_time_duration
@@ -127,8 +127,8 @@ async def process_image(grafana_dashboard_kiosk_url: str, message: PreparedTeleg
     socket = None
 
     try:
-        base_address = os.getenv("XPLATFORM_ADDRESS", "")
-        target_url = urljoin(base_address, "sendMediaGroup")
+        endpoint_type = app_config.ACHAT_DEFAULT_ENDPOINT if not message.chatId.startswith("-") else app_config.TG_DEFAULT_ENDPOINT
+        target_url = urljoin(app_config.XPLATFORM_ADDRESS, f"{endpoint_type}/sendMediaGroup")
 
         socket = r.image_post(
             url=target_url,
@@ -147,7 +147,7 @@ async def process_image(grafana_dashboard_kiosk_url: str, message: PreparedTeleg
         alert_sent_successful_total.labels(
             category="image_alert", http_code=str(status_code_str)
         ).inc()
-        
+
         logger.info(f"Ответ апстрима [{status_code_str}]: {socket.text}")
 
     except requests.exceptions.HTTPError as http_err:
@@ -172,7 +172,7 @@ async def process_image(grafana_dashboard_kiosk_url: str, message: PreparedTeleg
             detail=response_text,
         ).inc()
     except Exception as err:
-        logger.error(f"Ошибка отправки запроса: {err}")
+        logger.exception("Ошибка отправки запроса")
         alert_sent_failed_total.labels(
             category="Send_with_image_error",
             http_code="unknown",
@@ -191,8 +191,8 @@ async def process_image(grafana_dashboard_kiosk_url: str, message: PreparedTeleg
         if os.path.exists(screenshot_path):
             try:
                 os.remove(screenshot_path)
-            except Exception as e:
-                logger.error(f"Не удалось удалить скриншот: {e}")
+            except Exception:
+                logger.exception("Не удалось удалить скриншот")
                 disposal_errors_total.inc()
 
     return socket.text if socket else "No response"

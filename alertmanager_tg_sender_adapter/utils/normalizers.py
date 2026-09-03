@@ -6,7 +6,7 @@ from alertmanager_tg_sender_adapter.model.data_model import (
 
 def _normalize_field_name(field_name: str) -> str:
     """Нормализует имя поля, удаляя суффиксы типа .keyword, .text и т.д.
-    
+
     Примеры:
     - namespace.keyword -> namespace
     - namespace.text -> namespace
@@ -20,7 +20,7 @@ def _normalize_field_name(field_name: str) -> str:
     return field_name
 
 
-def build_telegram_messages(
+def build_messages(
     payload: AlertmanagerPayload,
 ) -> list[PreparedTelegramAlert]:
     messages = []
@@ -68,17 +68,17 @@ def build_telegram_messages(
 
         # Собираем дополнительные лейблы для дедупликации (игнорируя системные поля)
         extra_labels = {}
-        model_fields = {"chatId", "alertname", "alertgroup", "severity", "instance", 
-                       "pod", "namespace", "container", "grafana_dashboard", 
+        model_fields = {"chatId", "alertname", "alertgroup", "severity", "instance",
+                       "pod", "namespace", "container", "grafana_dashboard",
                        "send_grafana_full_page", "grafana_readonly_sa_token"}
-        
+
         # Получаем все дополнительные поля из лейблов (например, project, environment и т.д.)
         for key, value in labels.model_dump(exclude_unset=True).items():
             if key not in model_fields and value:
                 # Нормализуем имя поля (namespace.keyword -> namespace)
                 normalized_key = _normalize_field_name(key)
                 extra_labels[normalized_key] = str(value)
-        
+
         prepared_message = PreparedTelegramAlert(
             chatId=labels.chatId,
             text=text,

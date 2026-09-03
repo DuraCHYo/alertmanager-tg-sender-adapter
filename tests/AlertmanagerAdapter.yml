@@ -1,0 +1,137 @@
+opencollection: 1.0.0
+info:
+  name: AlertmanagerAdapter
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ''
+      port: ''
+      auth:
+        username: ''
+        password: ''
+      bypassProxy: ''
+items:
+  - info:
+      name: Send Message
+      type: http
+      seq: 1
+    http:
+      method: POST
+      url: http://0.0.0.0:8080/api/v1/alertmanager-sender-adapter/send
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "version": "4",
+            "groupKey": "test",
+            "truncatedAlerts": 3,
+            "status": "resolved",
+            "receiver": "tg-api",
+            "groupLabels": "test",
+            "commonLabels": 2,
+            "commonAnnotations": 2,
+            "externalURL": "TEST",
+            "alerts": [
+              {
+                "status": "resolved",
+                "labels": {
+                  "chatId": "ACHAT_CHAT_ID",
+                  "alertgroup": "kubernetes-apps",
+                  "alertname": "Алерт1",
+                  "container": "kube-state-metrics",
+                  "daemonset": "svclb-traefik-cfbcf9b2",
+                  "endpoint": "http",
+                  "instance": "10.42.2.49:8080",
+                  "job": "kube-state-metrics",
+                  "namespace": "kube-system",
+                  "pod": "victoria-metrics-kube-state-metrics-865d4cc775-rj5r5",
+                  "prometheus": "monitoring/victoria-metrics-k8s",
+                  "service": "victoria-metrics-kube-state-metrics",
+                  "severity": "warning"
+                },
+                "annotations": {
+                  "description": "1 Pods of DaemonSet kube-system/svclba-traefik-cfbcf9b2 are running where they are not supposed to run on cluster .",
+                  "runbook_url": "https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubedaemonsetmisscheduled",
+                  "summary": "DaemonSet pods are misscheduled."
+                },
+                "startsAt": "2026-05-30T22:07:00Z",
+                "endsAt": "0001-01-01T00:00:00Z"
+              },
+              {
+                "status": "firing",
+                "labels": {
+                  "chatId": "ACHAT_CHAT_ID",
+                  "grafana_dashboard": "https://sfaflmon/.../&kiosk=true",
+                  "send_grafana_full_page": "True",
+                  "grafana_readonly_sa_token": "GRAFANA_SA_READONLY_TOKEN",
+                  "alertgroup": "kubernetes-apps",
+                  "alertname": "Алерт2",
+                  "container": "kube-state-metrics",
+                  "daemonset": "svclb-traefik-cfbcf9b2",
+                  "endpoint": "http",
+                  "instance": "10.42.2.49:8080",
+                  "job": "kube-state-metrics",
+                  "namespace": "kube-system",
+                  "pod": "victoria-metrics-kube-state-metrics-865d4cc775-rj5r5",
+                  "prometheus": "monitoring/victoria-metrics-k8s",
+                  "service": "victoria-metrics-kube-state-metrics",
+                  "severity": "warning"
+                },
+                "annotations": {
+                  "description": "1 Pods of DaemonSet kube-system/svclba-traefik-cfbcf9b2 are running where they are not supposed to run on cluster .",
+                  "runbook_url": "https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubedaemonsetmisscheduled",
+                  "summary": "DaemonSet pods are misscheduled."
+                },
+                "startsAt": "2026-05-30T22:07:00Z",
+                "endsAt": "0001-01-01T00:00:00Z"
+              },
+              {
+                "status": "firing",
+                "labels": {
+                  "chatId": "ACHAT_CHAT_ID",
+                  "grafana_dashboard": "https://sfaflmon/.../&kiosk=true",
+                  "send_grafana_full_page": "False",
+                  "grafana_readonly_sa_token": "GRAFANA_SA_READONLY_TOKEN",
+                  "alertgroup": "kubernetes-apps",
+                  "alertname": "Алерт3",
+                  "container": "kube-state-metrics",
+                  "daemonset": "svclb-traefik-test",
+                  "endpoint": "http",
+                  "instance": "10.42.2.49:10000",
+                  "job": "kube-state-metrics",
+                  "namespace": "kube-system",
+                  "pod": "victoria-metrics-kube-state-metrics-865d4cc775-55555",
+                  "prometheus": "monitoring/victoria-metrics-k8s",
+                  "service": "victoria-metrics-kube-state-metrics",
+                  "severity": "warning"
+                },
+                "annotations": {
+                  "description": "Один тест никогда не бывает лишним",
+                  "runbook_url": "https://runbooks.prometheus-operator.dev",
+                  "summary": "Тест всему голова"
+                },
+                "startsAt": "2026-05-30T22:07:00Z",
+                "endsAt": "0001-01-01T00:00:00Z"
+              }
+            ]
+          }
+      auth: inherit
+    settings:
+      encodeUrl: true
+      timeout: 0
+      followRedirects: true
+      maxRedirects: 5
+      forwardAuthorizationHeader: false
+bundled: true
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git
+    exportedAt: '2026-08-30T18:15:14.017Z'
+    exportedUsing: Bruno

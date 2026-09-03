@@ -1,20 +1,19 @@
 import logging
-import asyncio
+from contextlib import asynccontextmanager
 
 import uvicorn
 from dotenv import load_dotenv
-from contextlib import asynccontextmanager
-from fastapi import BackgroundTasks, Body, FastAPI
+from fastapi import BackgroundTasks, FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from alertmanager_tg_sender_adapter.api import system
 from alertmanager_tg_sender_adapter.api.target import route_messages
-from alertmanager_tg_sender_adapter.config import config
-from alertmanager_tg_sender_adapter.render.browser_pool import BrowserManager
+from alertmanager_tg_sender_adapter.config import app_config
 from alertmanager_tg_sender_adapter.model.data_model import AlertmanagerPayload
 from alertmanager_tg_sender_adapter.model.filter import EndpointFilter
+from alertmanager_tg_sender_adapter.render.browser_pool import BrowserManager
 from alertmanager_tg_sender_adapter.utils.logger import init_logging
-from alertmanager_tg_sender_adapter.utils.normalizers import build_telegram_messages
+from alertmanager_tg_sender_adapter.utils.normalizers import build_messages
 
 # Всё логирование в отдельный сервис, потому что ну... так просто удобнее. Инициализировать в других файлах в 2 строки
 # import logging
@@ -25,7 +24,7 @@ log_level = init_logging()
 
 logger = logging.getLogger(__name__)
 
-logging.getLogger("uvicorn.access").addFilter(EndpointFilter(config.EXCLUDED_HANDLERS))
+logging.getLogger("uvicorn.access").addFilter(EndpointFilter(list(app_config.EXCLUDED_HANDLERS)))
 
 browser_manager = BrowserManager()
 
@@ -48,15 +47,15 @@ app.include_router(system.router)
 instrumentation = Instrumentator(
     should_group_status_codes=True,
     should_ignore_untemplated=True,
-    excluded_handlers=config.EXCLUDED_HANDLERS,
+    excluded_handlers=list(app_config.EXCLUDED_HANDLERS),
     should_respect_env_var=True,
     env_var_name="ENABLE_METRICS",
 ).instrument(app)
 
-
 @app.post("/api/v1/alertmanager-tg-sender-adapter/send")
+@app.post("/api/v1/alertmanager-sender-adapter/send")
 async def entrypoint(payload: AlertmanagerPayload, background_tasks: BackgroundTasks):
-    messages = build_telegram_messages(payload)
+    messages = build_messages(payload)
     background_tasks.add_task(route_messages, messages)
     return {"status": "accepted", "queued": len(messages)}
 
@@ -73,5 +72,5 @@ def main():
     )
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

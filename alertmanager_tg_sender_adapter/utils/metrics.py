@@ -10,7 +10,6 @@ alert_sent_failed_total = Counter(
     "Ошибок при отправке алертов",
     labelnames=("category", "http_code", "error_code", "description", "detail"),
 )
-#
 alert_image_sent_failed_total = Counter(
     "alert_image_sent_failed_total",
     "Ошибки при отправке алертов с картинкой",
